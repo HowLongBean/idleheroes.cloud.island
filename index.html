@@ -401,11 +401,14 @@
         { images: tenantImages4, arrayName: "tenantImages4" },
       ];
       const shareBaseUrl = "https://howlongbean.github.io/idleheroes.cloud.island/";
+      // z1 使用 DEFLATE + Base64URL；沒有前綴的舊 JSON 參數仍可還原。
+      const compressedStatePrefix = "z1.";
       const groups = [];
       const groupsContainer = document.getElementById("groups");
       const groupTemplate = document.getElementById("group-template");
       const addGroupButton = document.getElementById("add-group");
       const deleteGroupButton = document.getElementById("delete-group");
+      const shareSettingsButton = document.getElementById("share-settings");
       const shareResult = document.getElementById("share-result");
       const shareUrlInput = document.getElementById("share-url");
       const stateError = document.getElementById("state-error");
@@ -413,12 +416,13 @@
       const options = document.getElementById("image-options");
       const galleryError = document.getElementById("gallery-error");
       let nextGroupId = 1;
+      let shareRevision = 0;
 
       class SharedStateError extends Error {}
 
       addGroupButton.addEventListener("click", addGroup);
       deleteGroupButton.addEventListener("click", deleteGroup);
-      document.getElementById("share-settings").addEventListener("click", generateShareUrl);
+      shareSettingsButton.addEventListener("click", generateShareUrl);
       shareUrlInput.addEventListener("click", () => shareUrlInput.select());
       document.getElementById("close-dialog").addEventListener("click", () => dialog.close());
       dialog.addEventListener("click", (event) => {
@@ -536,6 +540,7 @@
       }
 
       function invalidateShareUrl() {
+        shareRevision++;
         shareResult.hidden = true;
         shareUrlInput.value = "";
       }
@@ -568,8 +573,58 @@
         return state.groups;
       }
 
-      function generateShareUrl() {
+      async function encodeSharedState(state) {
+        if (typeof CompressionStream !== "function") {
+          throw new SharedStateError("此瀏覽器不支援網址壓縮，請使用最新版瀏覽器。");
+        }
+        try {
+          const stream = new Blob([JSON.stringify(state)]).stream()
+            .pipeThrough(new CompressionStream("deflate"));
+          const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
+          const binary = Array.from(bytes, byte => String.fromCharCode(byte)).join("");
+          return compressedStatePrefix + btoa(binary)
+            .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+        } catch (error) {
+          if (!(error instanceof TypeError) && !(error instanceof DOMException)) throw error;
+          throw new SharedStateError("分享設定壓縮失敗，請重試或更新瀏覽器。");
+        }
+      }
+
+      async function decodeSharedState(value) {
+        let json = value;
+        if (value.startsWith(compressedStatePrefix)) {
+          if (typeof DecompressionStream !== "function") {
+            throw new SharedStateError("此瀏覽器不支援網址解壓縮，請使用最新版瀏覽器。");
+          }
+          const payload = value.slice(compressedStatePrefix.length);
+          if (!/^[A-Za-z0-9_-]+$/.test(payload) || payload.length % 4 === 1) {
+            throw new SharedStateError("分享網址的壓縮參數格式錯誤。");
+          }
+          try {
+            const binary = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+            const bytes = Uint8Array.from(binary, character => character.charCodeAt(0));
+            const stream = new Blob([bytes]).stream()
+              .pipeThrough(new DecompressionStream("deflate"));
+            json = new TextDecoder("utf-8", { fatal: true })
+              .decode(await new Response(stream).arrayBuffer());
+          } catch (error) {
+            if (!(error instanceof TypeError) && !(error instanceof DOMException)) throw error;
+            throw new SharedStateError("分享網址的壓縮資料已損壞，請重新取得連結。");
+          }
+        } else if (/^z\d+\./.test(value)) {
+          throw new SharedStateError("分享網址的壓縮版本不支援。");
+        }
+        try {
+          return JSON.parse(json);
+        } catch (error) {
+          if (!(error instanceof SyntaxError)) throw error;
+          throw new SharedStateError("網址中的設定不是有效的 JSON。");
+        }
+      }
+
+      async function generateShareUrl() {
         invalidateShareUrl();
+        const revision = shareRevision;
         stateError.hidden = true;
         const state = {
           version: 1,
@@ -580,37 +635,36 @@
         };
         try {
           validateSharedState(state);
+          const encodedState = await encodeSharedState(state);
+          if (revision !== shareRevision) return;
+          const url = new URL(shareBaseUrl);
+          url.searchParams.set("state", encodedState);
+          shareUrlInput.value = url.href;
+          shareResult.hidden = false;
+          shareUrlInput.focus();
+          shareUrlInput.select();
         } catch (error) {
           if (!(error instanceof SharedStateError)) throw error;
+          if (revision !== shareRevision) return;
           stateError.textContent = `無法產生分享網址：${error.message}`;
           stateError.hidden = false;
-          return;
         }
-        const url = new URL(shareBaseUrl);
-        url.searchParams.set("state", JSON.stringify(state));
-        shareUrlInput.value = url.href;
-        shareResult.hidden = false;
-        shareUrlInput.focus();
-        shareUrlInput.select();
       }
 
-      function initializeGroups() {
+      async function initializeGroups() {
         const parameters = new URLSearchParams(window.location.search);
         if (!parameters.has("state")) {
           addGroup();
           return;
         }
+        const controls = [addGroupButton, deleteGroupButton, shareSettingsButton];
+        controls.forEach(button => { button.disabled = true; });
+        groupsContainer.setAttribute("aria-busy", "true");
         try {
           if (parameters.getAll("state").length !== 1) {
             throw new SharedStateError("網址中有重複的 state 參數。");
           }
-          let state;
-          try {
-            state = JSON.parse(parameters.get("state"));
-          } catch (error) {
-            if (!(error instanceof SyntaxError)) throw error;
-            throw new SharedStateError("網址中的設定不是有效的 JSON。");
-          }
+          const state = await decodeSharedState(parameters.get("state"));
           const savedGroups = validateSharedState(state);
           for (const savedGroup of savedGroups) {
             const group = addGroup();
@@ -626,6 +680,9 @@
           stateError.textContent = `無法還原分享設定：${error.message} 目前顯示一組空白住宅。`;
           stateError.hidden = false;
           addGroup();
+        } finally {
+          controls.forEach(button => { button.disabled = false; });
+          groupsContainer.removeAttribute("aria-busy");
         }
       }
 
