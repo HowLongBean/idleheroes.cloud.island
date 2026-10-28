@@ -12,21 +12,23 @@ Cloud Island Simulator
 選擇後會顯示圖片，再次點擊即可更換。關閉按鈕、Esc 或點擊視窗外可取消選擇。
 頁面使用純 HTML、CSS 與 JavaScript，不需要安裝套件或後端；重新整理後會清除選擇。
 
-### 調整圖片順序
+### 調整屋主圖片名稱與順序
 
 編輯 [index.html](./index.html) 中的 `landlordImages` 陣列：
 
 ```js
 const landlordImages = [
-  "alikita_trans.png",
-  "basilisk_trans.png",
+  { filename: "alikita_trans.png", name: "Alikita" },
+  { filename: "basilisk_trans.png", name: "Basilisk" },
   // 其餘圖片……
 ];
 ```
 
 - 初始陣列已列出目前 Landlord 中的所有圖片，按檔名字母排序。
+- `filename` 是 Landlord 中的完整圖片檔名；`name` 是顯示名稱，可改成中文或自訂名稱。
+- `name` 會用於圖庫選項文字、選項的無障礙名稱、選取後的文字與圖片替代文字。修改名稱不會改變圖片路徑或房客索引。
 - 將項目往前或往後移動，即可調整選項顯示順序；程式不會再次排序。
-- 新增圖片時，先將檔案放進 Landlord，再將完整檔名加入陣列；刪除圖片時也要移除對應項目。
+- 新增圖片時，先將檔案放進 Landlord，再將含 `filename` 與 `name` 的物件加入陣列；刪除圖片時也要移除對應項目。
 - 檔名與副檔名的大小寫必須完全一致。清單不會自動掃描資料夾，也不會開啟本機檔案選擇器。
 
 ### 設定每位屋主可選的房客

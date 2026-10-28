@@ -46,7 +46,7 @@
         justify-content: center;
         gap: 12px;
         width: 100%;
-        min-height: 230px;
+        min-height: 200px;
         padding: 24px;
         overflow-wrap: anywhere;
         border: 2px dashed #6888b9;
@@ -55,6 +55,7 @@
       }
       .image-picker:hover:not(:disabled) { background: #20314c; border-color: #9fc2ff; }
       .image-picker > * { max-width: 100%; }
+      .image-picker strong:empty { display: none; }
       .section-title { margin: 0 0 20px; font-size: 1.25rem; }
       .placeholder { font-size: 3rem; color: #94bbff; }
       .preview { width: 112px; height: 118px; object-fit: contain; }
@@ -118,50 +119,50 @@
         <section class="panel" aria-labelledby="landlord-title">
           <h1 id="landlord-title" class="section-title">屋主</h1>
           <button id="image-picker" class="image-picker" type="button"
-            aria-haspopup="dialog" aria-controls="image-dialog">
+            aria-haspopup="dialog" aria-controls="image-dialog" aria-labelledby="landlord-title">
             <span id="placeholder" class="placeholder" aria-hidden="true">＋</span>
             <img id="selected-image" class="preview" alt="" hidden>
-            <strong id="picker-label">點擊選擇圖片</strong>
+            <strong id="picker-label"></strong>
           </button>
           <p id="preview-error" class="error" role="alert" hidden></p>
         </section>
         <section class="panel" aria-labelledby="tenant-title">
           <h2 id="tenant-title" class="section-title">房客 1</h2>
           <button id="tenant-picker" class="image-picker tenant-picker" type="button"
-            aria-haspopup="dialog" aria-controls="image-dialog" disabled>
+            aria-haspopup="dialog" aria-controls="image-dialog" aria-labelledby="tenant-title" disabled>
             <span class="placeholder" aria-hidden="true">＋</span>
             <img id="selected-tenant-image" class="preview" alt="" hidden>
-            <strong>請先選擇屋主</strong>
+            <strong></strong>
           </button>
           <p id="tenant-preview-error" class="error" role="alert" hidden></p>
         </section>
         <section class="panel" aria-labelledby="tenant-title-2">
           <h2 id="tenant-title-2" class="section-title">房客 2</h2>
           <button id="tenant-picker-2" class="image-picker tenant-picker" type="button"
-            aria-haspopup="dialog" aria-controls="image-dialog" disabled>
+            aria-haspopup="dialog" aria-controls="image-dialog" aria-labelledby="tenant-title-2" disabled>
             <span class="placeholder" aria-hidden="true">＋</span>
             <img id="selected-tenant-image-2" class="preview" alt="" hidden>
-            <strong>請先選擇屋主</strong>
+            <strong></strong>
           </button>
           <p id="tenant-preview-error-2" class="error" role="alert" hidden></p>
         </section>
         <section class="panel" aria-labelledby="tenant-title-3">
           <h2 id="tenant-title-3" class="section-title">房客 3</h2>
           <button id="tenant-picker-3" class="image-picker tenant-picker" type="button"
-            aria-haspopup="dialog" aria-controls="image-dialog" disabled>
+            aria-haspopup="dialog" aria-controls="image-dialog" aria-labelledby="tenant-title-3" disabled>
             <span class="placeholder" aria-hidden="true">＋</span>
             <img id="selected-tenant-image-3" class="preview" alt="" hidden>
-            <strong>請先選擇屋主</strong>
+            <strong></strong>
           </button>
           <p id="tenant-preview-error-3" class="error" role="alert" hidden></p>
         </section>
         <section class="panel" aria-labelledby="tenant-title-4">
           <h2 id="tenant-title-4" class="section-title">房客 4</h2>
           <button id="tenant-picker-4" class="image-picker tenant-picker" type="button"
-            aria-haspopup="dialog" aria-controls="image-dialog" disabled>
+            aria-haspopup="dialog" aria-controls="image-dialog" aria-labelledby="tenant-title-4" disabled>
             <span class="placeholder" aria-hidden="true">＋</span>
             <img id="selected-tenant-image-4" class="preview" alt="" hidden>
-            <strong>請先選擇屋主</strong>
+            <strong></strong>
           </button>
           <p id="tenant-preview-error-4" class="error" role="alert" hidden></p>
         </section>
@@ -184,26 +185,26 @@
     <script>
       // 直接調整陣列項目的位置即可改變顯示順序；程式不會重新排序。
       const landlordImages = [
-        "alikita_trans.png",
-        "basilisk_trans.png",
-        "erskor_trans.png",
-        "finn_trans.png",
-        "gaggie_trans.png",
-        "haig_trans.png",
-        "ignacia_trans.png",
-        "lethia_trans.png",
-        "luna_trans.png",
-        "madeleine_trans.png",
-        "mareia_trans.png",
-        "melissa_trans.png",
-        "oscar_trans.png",
-        "patricia_trans.png",
-        "sylvie_trans.png",
-        "umbrion_trans.png",
-        "vespera_trans.png",
-        "williams_trans.png",
-        "wukong_trans.png",
-        "yorhm_trans.png",
+        { filename: "alikita_trans.png", name: "Alikita" },
+        { filename: "basilisk_trans.png", name: "Basilisk" },
+        { filename: "erskor_trans.png", name: "Erskor" },
+        { filename: "finn_trans.png", name: "Finn" },
+        { filename: "gaggie_trans.png", name: "Gaggie" },
+        { filename: "haig_trans.png", name: "Haig" },
+        { filename: "ignacia_trans.png", name: "Ignacia" },
+        { filename: "lethia_trans.png", name: "Lethia" },
+        { filename: "luna_trans.png", name: "Luna" },
+        { filename: "madeleine_trans.png", name: "Madeleine" },
+        { filename: "mareia_trans.png", name: "Mareia" },
+        { filename: "melissa_trans.png", name: "Melissa" },
+        { filename: "oscar_trans.png", name: "Oscar" },
+        { filename: "patricia_trans.png", name: "Patricia" },
+        { filename: "sylvie_trans.png", name: "Sylvie" },
+        { filename: "umbrion_trans.png", name: "Umbrion" },
+        { filename: "vespera_trans.png", name: "Vespera" },
+        { filename: "williams_trans.png", name: "Williams" },
+        { filename: "wukong_trans.png", name: "Wukong" },
+        { filename: "yorhm_trans.png", name: "Yorhm" },
       ];
 
       const allTenantImages = [
@@ -390,9 +391,9 @@
       let selectedLandlordIndex = -1;
 
       picker.addEventListener("click", () => {
-        openGallery(landlordImages, "Landlord", selectedFile, (filename, index) => {
-          selectedFile = filename;
-          setPreview(picker, "Landlord", filename);
+        openGallery(landlordImages, "Landlord", selectedFile, (image, index) => {
+          selectedFile = image.filename;
+          setPreview(picker, "Landlord", image);
           if (selectedLandlordIndex !== index) {
             selectedLandlordIndex = index;
             tenantSlots.forEach(resetTenant);
@@ -402,9 +403,12 @@
       tenantSlots.forEach((slot, index) => {
         slot.button.addEventListener("click", () => {
           if (slot.button.disabled) return;
-          openGallery(slot.images[selectedLandlordIndex], "Tenant", slot.selectedFile, (filename) => {
-            slot.selectedFile = filename;
-            setPreview(slot.button, "Tenant", filename);
+          const images = slot.images[selectedLandlordIndex].map(filename => ({
+            filename, name: imageLabel(filename),
+          }));
+          openGallery(images, "Tenant", slot.selectedFile, (image) => {
+            slot.selectedFile = image.filename;
+            setPreview(slot.button, "Tenant", image);
           }, `選擇房客 ${index + 1}`);
         });
       });
@@ -429,22 +433,20 @@
         });
       }
 
-      function imageLabel(filename, folder) {
-        const name = filename.replace(/\.[^.]+$/, "");
-        const label = folder === "Landlord" ? name.replace(/_trans$/, "") : name;
+      function imageLabel(filename) {
+        const label = filename.replace(/\.[^.]+$/, "");
         return label.charAt(0).toUpperCase() + label.slice(1);
       }
 
-      function setPreview(button, folder, filename) {
+      function setPreview(button, folder, { filename, name: label }) {
         const image = button.querySelector(".preview");
-        const label = imageLabel(filename, folder);
         button.parentElement.querySelector(".error").hidden = true;
         image.dataset.filename = filename;
         image.alt = label;
         image.src = `./${folder}/${encodeURIComponent(filename)}`;
         image.hidden = false;
         button.querySelector(".placeholder").hidden = true;
-        button.querySelector("strong").textContent = `${label} · 點擊更換`;
+        button.querySelector("strong").textContent = `${label}`;
       }
 
       function resetTenant(slot) {
@@ -471,15 +473,15 @@
         tenantPicker.disabled = filenames.length === 0;
         tenantPicker.querySelector("strong").textContent = filenames.length === 0
           ? "此屋主尚未設定可選房客"
-          : "點擊選擇房客圖片";
+          : "點擊選擇房客";
       }
 
-      function openGallery(filenames, folder, selected, onSelect, title = "選擇屋主") {
+      function openGallery(images, folder, selected, onSelect, title = "選擇屋主") {
         options.replaceChildren();
         galleryError.hidden = true;
         dialog.setAttribute("aria-label", title);
-        filenames.forEach((filename, index) => {
-          const label = imageLabel(filename, folder);
+        images.forEach((entry, index) => {
+          const { filename, name: label } = entry;
           const option = document.createElement("button");
           option.type = "button";
           option.className = "image-option";
@@ -502,7 +504,7 @@
           caption.textContent = label;
           option.append(image, caption);
           option.addEventListener("click", () => {
-            onSelect(filename, index);
+            onSelect(entry, index);
             dialog.close();
           });
           options.append(option);
