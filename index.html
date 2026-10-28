@@ -33,19 +33,20 @@
         color: inherit;
         font: inherit;
       }
+      #groups { container-type: inline-size; }
       .picker-panels {
         display: grid;
-        grid-template-columns: repeat(5, minmax(220px, 1fr));
+        grid-template-columns: repeat(5, minmax(0, 1fr));
         align-items: start;
-        gap: 20px;
+        gap: clamp(4px, 1.25cqw, 20px);
         margin-top: 32px;
-        overflow-x: auto;
+        font-size: clamp(8px, 1cqw, 16px);
       }
       .panel {
         min-width: 0;
-        padding: 20px;
+        padding: clamp(2px, 1.25cqw, 20px);
         border: 1px solid #34425a;
-        border-radius: 20px;
+        border-radius: clamp(4px, 1.25cqw, 20px);
         background: #1a2639;
       }
 
@@ -57,21 +58,30 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 12px;
+        gap: clamp(3px, .75cqw, 12px);
         width: 100%;
-        min-height: 200px;
-        padding: 20px;
+        min-height: clamp(64px, 12.5cqw, 200px);
+        padding: clamp(2px, 1.25cqw, 20px);
         overflow-wrap: anywhere;
-        border: 2px dashed #6888b9;
-        border-radius: 14px;
+        border: clamp(1px, .125cqw, 2px) dashed #6888b9;
+        border-radius: clamp(3px, .875cqw, 14px);
         background: #142035;
       }
       .image-picker:hover:not(:disabled) { background: #20314c; border-color: #9fc2ff; }
       .image-picker > * { max-width: 100%; }
       .image-picker strong:empty { display: none; }
-      .section-title { margin: 0 0 20px; font-size: 1.25rem; }
-      .placeholder { font-size: 3rem; color: #94bbff; }
-      .preview { width: 112px; height: 118px; object-fit: contain; }
+      .section-title {
+        margin: 0 0 clamp(4px, 1.25cqw, 20px);
+        font-size: clamp(9px, 1.25cqw, 20px);
+        overflow-wrap: anywhere;
+      }
+      .placeholder { font-size: clamp(18px, 3cqw, 48px); color: #94bbff; }
+      .preview {
+        width: min(100%, clamp(32px, 7cqw, 112px));
+        height: auto;
+        aspect-ratio: 112 / 118;
+        object-fit: contain;
+      }
       .error { color: #ffb3b3; overflow-wrap: anywhere; }
 
       dialog {
@@ -120,9 +130,6 @@
 
       @media (max-width: 420px) {
         body { padding: 28px 16px; }
-        .picker-panels { gap: 12px; }
-        .panel { padding: 12px; }
-        .image-picker { padding: 16px 8px; }
         .dialog-content { padding: 16px; }
       }
     </style>

@@ -4,7 +4,9 @@ Cloud Island Simulator
 ## 圖片選擇頁面
 
 開啟 [index.html](./index.html)，點擊圖片框即可從 [Landlord](./Landlord) 圖庫選取圖片。
-屋主在左側，房客 1～4 依序橫向並排在右側，五個選框等寬；螢幕較窄時可在選框區域左右捲動。
+屋主在左側，房客 1～4 依序橫向並排在右側，任何螢幕寬度都維持五個等寬選框同一列，不需左右捲動。
+選框高度、圖片、文字、間距與內距依 group 容器寬度縮放；窄螢幕上的文字會相應縮小。
+響應式尺寸使用 CSS container query 單位 `cqw` 與 `clamp()`，可在 [index.html](./index.html) 的 `#groups`、`.picker-panels`、`.image-picker` 等樣式中調整。
 彈出的圖庫視窗維持原本大小。
 選定屋主後，右側房客選框才會啟用，可從 [Tenant](./Tenant) 選取該屋主允許的圖片。
 四個房客各自保存選擇，互不影響，也可選擇相同圖片。
