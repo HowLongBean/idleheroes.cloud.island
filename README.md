@@ -65,12 +65,12 @@ group.tenantSlots.map(slot => slot.selectedFile);
 ```js
 const landlordImages = [
   { filename: "alikita_trans.png", name: "Alikita" },
-  { filename: "basilisk_trans.png", name: "Basilisk" },
+  { filename: "aranea_trans.png", name: "Aranea" },
   // 其餘圖片……
 ];
 ```
 
-- 初始陣列已列出目前 Landlord 中的所有圖片，按檔名字母排序。
+- 陣列已列出目前 Landlord 中的全部 38 張圖片，按檔名字母排序；四組房客陣列的索引也已同步。
 - `filename` 是 Landlord 中的完整圖片檔名；`name` 是顯示名稱，可改成中文或自訂名稱。
 - `name` 會用於圖庫選項文字、選項的無障礙名稱、選取後的文字與圖片替代文字。修改名稱不會改變圖片路徑或房客索引。
 - 將項目往前或往後移動，即可調整選項顯示順序；程式不會再次排序。

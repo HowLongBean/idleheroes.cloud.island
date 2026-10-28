@@ -221,26 +221,44 @@
     <script>
       // 直接調整陣列項目的位置即可改變顯示順序；程式不會重新排序。
       const landlordImages = [
-        { filename: "alikita_trans.png", name: "Alikita" },
-        { filename: "basilisk_trans.png", name: "Basilisk" },
-        { filename: "erskor_trans.png", name: "Erskor" },
-        { filename: "finn_trans.png", name: "Finn" },
-        { filename: "gaggie_trans.png", name: "Gaggie" },
-        { filename: "haig_trans.png", name: "Haig" },
-        { filename: "ignacia_trans.png", name: "Ignacia" },
         { filename: "lethia_trans.png", name: "Lethia" },
-        { filename: "luna_trans.png", name: "Luna" },
-        { filename: "madeleine_trans.png", name: "Madeleine" },
-        { filename: "mareia_trans.png", name: "Mareia" },
-        { filename: "melissa_trans.png", name: "Melissa" },
-        { filename: "oscar_trans.png", name: "Oscar" },
-        { filename: "patricia_trans.png", name: "Patricia" },
-        { filename: "sylvie_trans.png", name: "Sylvie" },
+        { filename: "erskor_trans.png", name: "Erskor" },
         { filename: "umbrion_trans.png", name: "Umbrion" },
+        { filename: "mareia_trans.png", name: "Mareia" },
+        { filename: "oscar_trans.png", name: "Oscar" },
+        { filename: "madeleine_trans.png", name: "Madeleine" },
+        { filename: "basilisk_trans.png", name: "Basilisk" },
+        { filename: "ignacia_trans.png", name: "Ignacia" },
         { filename: "vespera_trans.png", name: "Vespera" },
-        { filename: "williams_trans.png", name: "Williams" },
+        { filename: "sylvie_trans.png", name: "Sylvie" },
+        { filename: "finn_trans.png", name: "Finn" },
         { filename: "wukong_trans.png", name: "Wukong" },
+        { filename: "haig_trans.png", name: "Haig" },
+        { filename: "williams_trans.png", name: "Williams" },
+        { filename: "melissa_trans.png", name: "Melissa" },
+        { filename: "alikita_trans.png", name: "Alikita" },
+        { filename: "luna_trans.png", name: "Luna" },
+        { filename: "patricia_trans.png", name: "Patricia" },
         { filename: "yorhm_trans.png", name: "Yorhm" },
+        { filename: "gaggie_trans.png", name: "Gaggie" },
+        { filename: "betty_trans.png", name: "Betty" },
+        { filename: "natalie_trans.png", name: "Natalie" },
+        { filename: "geester_trans.png", name: "Geester" },
+        { filename: "aylamak_trans.png", name: "Aylamak" },
+        { filename: "elena_trans.png", name: "Elena" },
+        { filename: "vulcan_trans.png", name: "Vulcan" },
+        { filename: "aranea_trans.png", name: "Aranea" },
+        { filename: "azrael_trans.png", name: "Azrael" },
+        { filename: "mockman_trans.png", name: "Mockman" },
+        { filename: "freya_trans.png", name: "Freya" },
+        { filename: "holmes_trans.png", name: "Holmes" },
+        { filename: "eos_trans.png", name: "Eos" },
+        { filename: "aspen_trans.png", name: "Aspen" },
+        { filename: "vesa_trans.png", name: "Vesa" },
+        { filename: "jahra_trans.png", name: "Jahra" },
+        { filename: "asmodel_trans.png", name: "Asmodel" },
+        { filename: "halora_trans.png", name: "Halora" },
+        { filename: "xia_trans.png", name: "Xia" },
       ];
 
       const allTenantImages = [
@@ -309,96 +327,168 @@
 
       // tenantImages[i] 對應 landlordImages[i]；可將 [...allTenantImages] 換成指定檔名陣列。
       const tenantImages = [
-        ["aranea.png", "aranea_trans.png"], // 0: alikita_trans.png
-        [...allTenantImages], // 1: basilisk_trans.png
-        [...allTenantImages], // 2: erskor_trans.png
-        [...allTenantImages], // 3: finn_trans.png
-        [...allTenantImages], // 4: gaggie_trans.png
-        [...allTenantImages], // 5: haig_trans.png
-        [...allTenantImages], // 6: ignacia_trans.png
-        [...allTenantImages], // 7: lethia_trans.png
-        [...allTenantImages], // 8: luna_trans.png
-        [...allTenantImages], // 9: madeleine_trans.png
-        [...allTenantImages], // 10: mareia_trans.png
-        [...allTenantImages], // 11: melissa_trans.png
-        [...allTenantImages], // 12: oscar_trans.png
-        [...allTenantImages], // 13: patricia_trans.png
-        [...allTenantImages], // 14: sylvie_trans.png
-        [...allTenantImages], // 15: umbrion_trans.png
-        [...allTenantImages], // 16: vespera_trans.png
-        [...allTenantImages], // 17: williams_trans.png
-        [...allTenantImages], // 18: wukong_trans.png
-        [...allTenantImages], // 19: yorhm_trans.png
+        ["aranea.png", "aranea_trans.png"], // 0: lethia_trans.png
+        [...allTenantImages], // 1: erskor_trans.png
+        [...allTenantImages], // 2: umbrion_trans.png
+        [...allTenantImages], // 3: mareia_trans.png
+        [...allTenantImages], // 4: oscar_trans.png
+        [...allTenantImages], // 5: madeleine_trans.png
+        [...allTenantImages], // 6: basilisk_trans.png
+        [...allTenantImages], // 7: ignacia_trans.png
+        [...allTenantImages], // 8: vespera_trans.png
+        [...allTenantImages], // 9: sylvie_trans.png
+        [...allTenantImages], // 10: finn_trans.png
+        [...allTenantImages], // 11: wukong_trans.png
+        [...allTenantImages], // 12: haig_trans.png
+        [...allTenantImages], // 13: williams_trans.png
+        [...allTenantImages], // 14: melissa_trans.png
+        [...allTenantImages], // 15: alikita_trans.png
+        [...allTenantImages], // 16: luna_trans.png
+        [...allTenantImages], // 17: patricia_trans.png
+        [...allTenantImages], // 18: yorhm_trans.png
+        [...allTenantImages], // 19: gaggie_trans.png
+        [...allTenantImages], // 20: betty_trans.png
+        [...allTenantImages], // 21: natalie_trans.png
+        [...allTenantImages], // 22: geester_trans.png
+        [...allTenantImages], // 23: aylamak_trans.png
+        [...allTenantImages], // 24: elena_trans.png
+        [...allTenantImages], // 25: vulcan_trans.png
+        [...allTenantImages], // 26: aranea_trans.png
+        [...allTenantImages], // 27: azrael_trans.png
+        [...allTenantImages], // 28: mockman_trans.png
+        [...allTenantImages], // 29: freya_trans.png
+        [...allTenantImages], // 30: holmes_trans.png
+        [...allTenantImages], // 31: eos_trans.png
+        [...allTenantImages], // 32: aspen_trans.png
+        [...allTenantImages], // 33: vesa_trans.png
+        [...allTenantImages], // 34: jahra_trans.png
+        [...allTenantImages], // 35: asmodel_trans.png
+        [...allTenantImages], // 36: halora_trans.png
+        [...allTenantImages], // 37: xia_trans.png
       ];
 
       // 房客 2～4 各自使用獨立清單，索引同樣對應 landlordImages。
       const tenantImages2 = [
-        [...allTenantImages], // 0: alikita_trans.png
-        [...allTenantImages], // 1: basilisk_trans.png
-        [...allTenantImages], // 2: erskor_trans.png
-        [...allTenantImages], // 3: finn_trans.png
-        [...allTenantImages], // 4: gaggie_trans.png
-        [...allTenantImages], // 5: haig_trans.png
-        [...allTenantImages], // 6: ignacia_trans.png
-        [...allTenantImages], // 7: lethia_trans.png
-        [...allTenantImages], // 8: luna_trans.png
-        [...allTenantImages], // 9: madeleine_trans.png
-        [...allTenantImages], // 10: mareia_trans.png
-        [...allTenantImages], // 11: melissa_trans.png
-        [...allTenantImages], // 12: oscar_trans.png
-        [...allTenantImages], // 13: patricia_trans.png
-        [...allTenantImages], // 14: sylvie_trans.png
-        [...allTenantImages], // 15: umbrion_trans.png
-        [...allTenantImages], // 16: vespera_trans.png
-        [...allTenantImages], // 17: williams_trans.png
-        [...allTenantImages], // 18: wukong_trans.png
-        [...allTenantImages], // 19: yorhm_trans.png
+        [...allTenantImages], // 0: lethia_trans.png
+        [...allTenantImages], // 1: erskor_trans.png
+        [...allTenantImages], // 2: umbrion_trans.png
+        [...allTenantImages], // 3: mareia_trans.png
+        [...allTenantImages], // 4: oscar_trans.png
+        [...allTenantImages], // 5: madeleine_trans.png
+        [...allTenantImages], // 6: basilisk_trans.png
+        [...allTenantImages], // 7: ignacia_trans.png
+        [...allTenantImages], // 8: vespera_trans.png
+        [...allTenantImages], // 9: sylvie_trans.png
+        [...allTenantImages], // 10: finn_trans.png
+        [...allTenantImages], // 11: wukong_trans.png
+        [...allTenantImages], // 12: haig_trans.png
+        [...allTenantImages], // 13: williams_trans.png
+        [...allTenantImages], // 14: melissa_trans.png
+        [...allTenantImages], // 15: alikita_trans.png
+        [...allTenantImages], // 16: luna_trans.png
+        [...allTenantImages], // 17: patricia_trans.png
+        [...allTenantImages], // 18: yorhm_trans.png
+        [...allTenantImages], // 19: gaggie_trans.png
+        [...allTenantImages], // 20: betty_trans.png
+        [...allTenantImages], // 21: natalie_trans.png
+        [...allTenantImages], // 22: geester_trans.png
+        [...allTenantImages], // 23: aylamak_trans.png
+        [...allTenantImages], // 24: elena_trans.png
+        [...allTenantImages], // 25: vulcan_trans.png
+        [...allTenantImages], // 26: aranea_trans.png
+        [...allTenantImages], // 27: azrael_trans.png
+        [...allTenantImages], // 28: mockman_trans.png
+        [...allTenantImages], // 29: freya_trans.png
+        [...allTenantImages], // 30: holmes_trans.png
+        [...allTenantImages], // 31: eos_trans.png
+        [...allTenantImages], // 32: aspen_trans.png
+        [...allTenantImages], // 33: vesa_trans.png
+        [...allTenantImages], // 34: jahra_trans.png
+        [...allTenantImages], // 35: asmodel_trans.png
+        [...allTenantImages], // 36: halora_trans.png
+        [...allTenantImages], // 37: xia_trans.png
       ];
 
       const tenantImages3 = [
-        [...allTenantImages], // 0: alikita_trans.png
-        [...allTenantImages], // 1: basilisk_trans.png
-        [...allTenantImages], // 2: erskor_trans.png
-        [...allTenantImages], // 3: finn_trans.png
-        [...allTenantImages], // 4: gaggie_trans.png
-        [...allTenantImages], // 5: haig_trans.png
-        [...allTenantImages], // 6: ignacia_trans.png
-        [...allTenantImages], // 7: lethia_trans.png
-        [...allTenantImages], // 8: luna_trans.png
-        [...allTenantImages], // 9: madeleine_trans.png
-        [...allTenantImages], // 10: mareia_trans.png
-        [...allTenantImages], // 11: melissa_trans.png
-        [...allTenantImages], // 12: oscar_trans.png
-        [...allTenantImages], // 13: patricia_trans.png
-        [...allTenantImages], // 14: sylvie_trans.png
-        [...allTenantImages], // 15: umbrion_trans.png
-        [...allTenantImages], // 16: vespera_trans.png
-        [...allTenantImages], // 17: williams_trans.png
-        [...allTenantImages], // 18: wukong_trans.png
-        [...allTenantImages], // 19: yorhm_trans.png
+        [...allTenantImages], // 0: lethia_trans.png
+        [...allTenantImages], // 1: erskor_trans.png
+        [...allTenantImages], // 2: umbrion_trans.png
+        [...allTenantImages], // 3: mareia_trans.png
+        [...allTenantImages], // 4: oscar_trans.png
+        [...allTenantImages], // 5: madeleine_trans.png
+        [...allTenantImages], // 6: basilisk_trans.png
+        [...allTenantImages], // 7: ignacia_trans.png
+        [...allTenantImages], // 8: vespera_trans.png
+        [...allTenantImages], // 9: sylvie_trans.png
+        [...allTenantImages], // 10: finn_trans.png
+        [...allTenantImages], // 11: wukong_trans.png
+        [...allTenantImages], // 12: haig_trans.png
+        [...allTenantImages], // 13: williams_trans.png
+        [...allTenantImages], // 14: melissa_trans.png
+        [...allTenantImages], // 15: alikita_trans.png
+        [...allTenantImages], // 16: luna_trans.png
+        [...allTenantImages], // 17: patricia_trans.png
+        [...allTenantImages], // 18: yorhm_trans.png
+        [...allTenantImages], // 19: gaggie_trans.png
+        [...allTenantImages], // 20: betty_trans.png
+        [...allTenantImages], // 21: natalie_trans.png
+        [...allTenantImages], // 22: geester_trans.png
+        [...allTenantImages], // 23: aylamak_trans.png
+        [...allTenantImages], // 24: elena_trans.png
+        [...allTenantImages], // 25: vulcan_trans.png
+        [...allTenantImages], // 26: aranea_trans.png
+        [...allTenantImages], // 27: azrael_trans.png
+        [...allTenantImages], // 28: mockman_trans.png
+        [...allTenantImages], // 29: freya_trans.png
+        [...allTenantImages], // 30: holmes_trans.png
+        [...allTenantImages], // 31: eos_trans.png
+        [...allTenantImages], // 32: aspen_trans.png
+        [...allTenantImages], // 33: vesa_trans.png
+        [...allTenantImages], // 34: jahra_trans.png
+        [...allTenantImages], // 35: asmodel_trans.png
+        [...allTenantImages], // 36: halora_trans.png
+        [...allTenantImages], // 37: xia_trans.png
       ];
 
       const tenantImages4 = [
-        [...allTenantImages], // 0: alikita_trans.png
-        [...allTenantImages], // 1: basilisk_trans.png
-        [...allTenantImages], // 2: erskor_trans.png
-        [...allTenantImages], // 3: finn_trans.png
-        [...allTenantImages], // 4: gaggie_trans.png
-        [...allTenantImages], // 5: haig_trans.png
-        [...allTenantImages], // 6: ignacia_trans.png
-        [...allTenantImages], // 7: lethia_trans.png
-        [...allTenantImages], // 8: luna_trans.png
-        [...allTenantImages], // 9: madeleine_trans.png
-        [...allTenantImages], // 10: mareia_trans.png
-        [...allTenantImages], // 11: melissa_trans.png
-        [...allTenantImages], // 12: oscar_trans.png
-        [...allTenantImages], // 13: patricia_trans.png
-        [...allTenantImages], // 14: sylvie_trans.png
-        [...allTenantImages], // 15: umbrion_trans.png
-        [...allTenantImages], // 16: vespera_trans.png
-        [...allTenantImages], // 17: williams_trans.png
-        [...allTenantImages], // 18: wukong_trans.png
-        [...allTenantImages], // 19: yorhm_trans.png
+        [...allTenantImages], // 0: lethia_trans.png
+        [...allTenantImages], // 1: erskor_trans.png
+        [...allTenantImages], // 2: umbrion_trans.png
+        [...allTenantImages], // 3: mareia_trans.png
+        [...allTenantImages], // 4: oscar_trans.png
+        [...allTenantImages], // 5: madeleine_trans.png
+        [...allTenantImages], // 6: basilisk_trans.png
+        [...allTenantImages], // 7: ignacia_trans.png
+        [...allTenantImages], // 8: vespera_trans.png
+        [...allTenantImages], // 9: sylvie_trans.png
+        [...allTenantImages], // 10: finn_trans.png
+        [...allTenantImages], // 11: wukong_trans.png
+        [...allTenantImages], // 12: haig_trans.png
+        [...allTenantImages], // 13: williams_trans.png
+        [...allTenantImages], // 14: melissa_trans.png
+        [...allTenantImages], // 15: alikita_trans.png
+        [...allTenantImages], // 16: luna_trans.png
+        [...allTenantImages], // 17: patricia_trans.png
+        [...allTenantImages], // 18: yorhm_trans.png
+        [...allTenantImages], // 19: gaggie_trans.png
+        [...allTenantImages], // 20: betty_trans.png
+        [...allTenantImages], // 21: natalie_trans.png
+        [...allTenantImages], // 22: geester_trans.png
+        [...allTenantImages], // 23: aylamak_trans.png
+        [...allTenantImages], // 24: elena_trans.png
+        [...allTenantImages], // 25: vulcan_trans.png
+        [...allTenantImages], // 26: aranea_trans.png
+        [...allTenantImages], // 27: azrael_trans.png
+        [...allTenantImages], // 28: mockman_trans.png
+        [...allTenantImages], // 29: freya_trans.png
+        [...allTenantImages], // 30: holmes_trans.png
+        [...allTenantImages], // 31: eos_trans.png
+        [...allTenantImages], // 32: aspen_trans.png
+        [...allTenantImages], // 33: vesa_trans.png
+        [...allTenantImages], // 34: jahra_trans.png
+        [...allTenantImages], // 35: asmodel_trans.png
+        [...allTenantImages], // 36: halora_trans.png
+        [...allTenantImages], // 37: xia_trans.png
       ];
 
       const tenantConfigurations = [
