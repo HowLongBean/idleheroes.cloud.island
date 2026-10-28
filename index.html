@@ -75,6 +75,7 @@
       dialog::backdrop { background: rgb(4 10 20 / 80%); }
       .dialog-content { padding: 24px; }
       .dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+      #dialog-title { font-weight: normal; }
       .close-button, .group-button {
         flex-shrink: 0;
         padding: 8px 14px;
@@ -180,13 +181,12 @@
       </div>
     </template>
 
-    <dialog id="image-dialog" aria-label="圖片選擇" aria-describedby="dialog-description">
+    <dialog id="image-dialog" aria-label="圖片選擇">
       <div class="dialog-content">
         <div class="dialog-header">
-          <h2 id="dialog-title"></h2>
+          <h2 id="dialog-title">選擇圖片即可套用；按 Esc 可取消。</h2>
           <button id="close-dialog" class="close-button" type="button" autofocus>關閉</button>
         </div>
-        <p id="dialog-description" class="muted">選擇圖片即可套用；按 Esc 可取消。</p>
         <p id="gallery-error" class="error" role="alert" hidden></p>
         <div id="image-options" class="image-grid"></div>
       </div>
