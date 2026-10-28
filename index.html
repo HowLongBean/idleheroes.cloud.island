@@ -21,6 +21,18 @@
       .eyebrow { color: #94bbff; letter-spacing: .12em; font-size: .8rem; }
       .muted { color: #aab8cd; }
       .group-controls { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+      #share-settings { margin-left: auto; }
+      #share-result { margin-top: 20px; }
+      #share-result label { display: block; margin-bottom: 8px; }
+      #share-url {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #526583;
+        border-radius: 8px;
+        background: #142035;
+        color: inherit;
+        font: inherit;
+      }
       .picker-panels {
         display: grid;
         grid-template-columns: repeat(5, minmax(220px, 1fr));
@@ -38,7 +50,7 @@
       }
 
       button { font: inherit; color: inherit; cursor: pointer; }
-      button:focus-visible, .picker-panels:focus-visible { outline: 3px solid #9fc2ff; outline-offset: 4px; }
+      button:focus-visible, .picker-panels:focus-visible, #share-url:focus-visible { outline: 3px solid #9fc2ff; outline-offset: 4px; }
       button:disabled { cursor: not-allowed; opacity: .5; }
       .image-picker {
         display: flex;
@@ -121,7 +133,14 @@
       <div class="group-controls">
         <button id="add-group" class="group-button" type="button" aria-controls="groups">住宅新建</button>
         <button id="delete-group" class="group-button" type="button" aria-controls="groups" hidden>住宅拆遷</button>
+        <button id="share-settings" class="group-button" type="button" aria-controls="share-result">產生分享網址</button>
       </div>
+      <div id="share-result" hidden>
+        <label for="share-url">分享網址</label>
+        <input id="share-url" type="text" readonly>
+        <p class="muted" role="status">網址已產生，請複製後分享。連結記錄的是產生當下的設定。</p>
+      </div>
+      <p id="state-error" class="error" role="alert" hidden></p>
       <div id="groups"></div>
       <noscript><p class="error">請啟用 JavaScript，才能開啟圖片選項。</p></noscript>
     </main>
@@ -381,17 +400,26 @@
         { images: tenantImages3, arrayName: "tenantImages3" },
         { images: tenantImages4, arrayName: "tenantImages4" },
       ];
+      const shareBaseUrl = "https://howlongbean.github.io/idleheroes.cloud.island/";
+      const groups = [];
       const groupsContainer = document.getElementById("groups");
       const groupTemplate = document.getElementById("group-template");
       const addGroupButton = document.getElementById("add-group");
       const deleteGroupButton = document.getElementById("delete-group");
+      const shareResult = document.getElementById("share-result");
+      const shareUrlInput = document.getElementById("share-url");
+      const stateError = document.getElementById("state-error");
       const dialog = document.getElementById("image-dialog");
       const options = document.getElementById("image-options");
       const galleryError = document.getElementById("gallery-error");
       let nextGroupId = 1;
 
+      class SharedStateError extends Error {}
+
       addGroupButton.addEventListener("click", addGroup);
       deleteGroupButton.addEventListener("click", deleteGroup);
+      document.getElementById("share-settings").addEventListener("click", generateShareUrl);
+      shareUrlInput.addEventListener("click", () => shareUrlInput.select());
       document.getElementById("close-dialog").addEventListener("click", () => dialog.close());
       dialog.addEventListener("click", (event) => {
         if (event.target === dialog) dialog.close();
@@ -430,13 +458,8 @@
 
         picker.addEventListener("click", () => {
           dialog.dataset.groupId = element.id;
-          openGallery(landlordImages, "Landlord", group.selectedFile, (image, index) => {
-            group.selectedFile = image.filename;
-            setPreview(picker, "Landlord", image);
-            if (group.selectedLandlordIndex !== index) {
-              group.selectedLandlordIndex = index;
-              group.tenantSlots.forEach(slot => resetTenant(slot, index));
-            }
+          openGallery(landlordImages, "Landlord", group.selectedFile, (_image, index) => {
+            selectLandlord(group, index);
           }, `第 ${number} 組：選擇屋主`);
         });
         group.tenantSlots.forEach((slot, index) => {
@@ -447,8 +470,7 @@
               filename, name: imageLabel(filename),
             }));
             openGallery(images, "Tenant", slot.selectedFile, (image) => {
-              slot.selectedFile = image.filename;
-              setPreview(slot.button, "Tenant", image);
+              selectTenant(slot, image.filename);
             }, `第 ${number} 組：選擇房客 ${index + 1}`);
           });
         });
@@ -464,17 +486,19 @@
         }
 
         groupsContainer.append(element);
-        deleteGroupButton.hidden = groupsContainer.childElementCount <= 1;
+        groups.push(group);
+        deleteGroupButton.hidden = groups.length <= 1;
+        invalidateShareUrl();
         return group;
       }
 
       function deleteGroup() {
-        if (groupsContainer.childElementCount <= 1) {
+        if (groups.length <= 1) {
           console.warn("至少需保留一組，無法刪除最後一組。");
           return false;
         }
 
-        const lastGroup = groupsContainer.lastElementChild;
+        const lastGroup = groups[groups.length - 1].element;
         const focusedElement = document.activeElement;
         const ownsGallery = dialog.dataset.groupId === lastGroup.id;
         const closesGallery = ownsGallery && dialog.open;
@@ -484,12 +508,125 @@
           delete dialog.dataset.groupId;
         }
         lastGroup.remove();
-        deleteGroupButton.hidden = groupsContainer.childElementCount <= 1;
+        groups.pop();
+        deleteGroupButton.hidden = groups.length <= 1;
+        invalidateShareUrl();
         if (closesGallery || lastGroup.contains(focusedElement)
           || (deleteGroupButton.hidden && focusedElement === deleteGroupButton)) {
           (deleteGroupButton.hidden ? addGroupButton : deleteGroupButton).focus();
         }
         return true;
+      }
+
+      function selectLandlord(group, index) {
+        const image = landlordImages[index];
+        group.selectedFile = image.filename;
+        setPreview(group.element.querySelector(".landlord-picker"), "Landlord", image);
+        if (group.selectedLandlordIndex !== index) {
+          group.selectedLandlordIndex = index;
+          group.tenantSlots.forEach(slot => resetTenant(slot, index));
+        }
+        invalidateShareUrl();
+      }
+
+      function selectTenant(slot, filename) {
+        slot.selectedFile = filename;
+        setPreview(slot.button, "Tenant", { filename, name: imageLabel(filename) });
+        invalidateShareUrl();
+      }
+
+      function invalidateShareUrl() {
+        shareResult.hidden = true;
+        shareUrlInput.value = "";
+      }
+
+      function validateSharedState(state) {
+        if (!state || typeof state !== "object" || Array.isArray(state) || state.version !== 1) {
+          throw new SharedStateError("分享設定版本不支援或格式錯誤。");
+        }
+        if (!Array.isArray(state.groups) || state.groups.length === 0) {
+          throw new SharedStateError("分享設定至少需要一組住宅。");
+        }
+        state.groups.forEach((savedGroup, index) => {
+          if (!savedGroup || typeof savedGroup !== "object" || Array.isArray(savedGroup)
+            || !Array.isArray(savedGroup.tenants) || savedGroup.tenants.length !== tenantConfigurations.length) {
+            throw new SharedStateError(`第 ${index + 1} 組必須包含四個房客位置。`);
+          }
+          const landlordIndex = landlordImages.findIndex(image => image.filename === savedGroup.landlord);
+          if (savedGroup.landlord !== null && landlordIndex === -1) {
+            throw new SharedStateError(`第 ${index + 1} 組的屋主不在目前圖庫中。`);
+          }
+          savedGroup.tenants.forEach((filename, slotIndex) => {
+            if (filename === null) return;
+            const allowedImages = tenantConfigurations[slotIndex].images[landlordIndex];
+            if (landlordIndex === -1 || typeof filename !== "string"
+              || !Array.isArray(allowedImages) || !allowedImages.includes(filename)) {
+              throw new SharedStateError(`第 ${index + 1} 組的房客 ${slotIndex + 1} 不在此屋主允許的清單中。`);
+            }
+          });
+        });
+        return state.groups;
+      }
+
+      function generateShareUrl() {
+        invalidateShareUrl();
+        stateError.hidden = true;
+        const state = {
+          version: 1,
+          groups: groups.map(group => ({
+            landlord: group.selectedFile,
+            tenants: group.tenantSlots.map(slot => slot.selectedFile),
+          })),
+        };
+        try {
+          validateSharedState(state);
+        } catch (error) {
+          if (!(error instanceof SharedStateError)) throw error;
+          stateError.textContent = `無法產生分享網址：${error.message}`;
+          stateError.hidden = false;
+          return;
+        }
+        const url = new URL(shareBaseUrl);
+        url.searchParams.set("state", JSON.stringify(state));
+        shareUrlInput.value = url.href;
+        shareResult.hidden = false;
+        shareUrlInput.focus();
+        shareUrlInput.select();
+      }
+
+      function initializeGroups() {
+        const parameters = new URLSearchParams(window.location.search);
+        if (!parameters.has("state")) {
+          addGroup();
+          return;
+        }
+        try {
+          if (parameters.getAll("state").length !== 1) {
+            throw new SharedStateError("網址中有重複的 state 參數。");
+          }
+          let state;
+          try {
+            state = JSON.parse(parameters.get("state"));
+          } catch (error) {
+            if (!(error instanceof SyntaxError)) throw error;
+            throw new SharedStateError("網址中的設定不是有效的 JSON。");
+          }
+          const savedGroups = validateSharedState(state);
+          for (const savedGroup of savedGroups) {
+            const group = addGroup();
+            if (savedGroup.landlord !== null) {
+              selectLandlord(group, landlordImages.findIndex(image => image.filename === savedGroup.landlord));
+              savedGroup.tenants.forEach((filename, index) => {
+                if (filename !== null) selectTenant(group.tenantSlots[index], filename);
+              });
+            }
+          }
+        } catch (error) {
+          if (!(error instanceof SharedStateError)) throw error;
+          stateError.textContent = `無法還原分享設定：${error.message} 目前顯示一組空白住宅。`;
+          stateError.hidden = false;
+          addGroup();
+        }
       }
 
       function imageLabel(filename) {
@@ -574,7 +711,7 @@
         dialog.showModal();
       }
 
-      addGroup();
+      initializeGroups();
     </script>
   </body>
 </html>
