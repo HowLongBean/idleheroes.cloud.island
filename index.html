@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cloud Island · 圖片選擇</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: system-ui, sans-serif;
+        background: #101827;
+        color: #edf2fa;
+      }
+
+      * { box-sizing: border-box; }
+      body { margin: 0; padding: 48px 20px; }
+      main { max-width: 720px; margin: auto; }
+      h1 { margin: 8px 0 12px; font-size: clamp(1.8rem, 5vw, 2.5rem); }
+      h2 { margin: 0; font-size: 1.25rem; }
+      p { line-height: 1.6; }
+      .eyebrow { color: #94bbff; letter-spacing: .12em; font-size: .8rem; }
+      .muted { color: #aab8cd; }
+      .panel {
+        margin-top: 32px;
+        padding: 28px;
+        border: 1px solid #34425a;
+        border-radius: 20px;
+        background: #1a2639;
+      }
+
+      button { font: inherit; color: inherit; cursor: pointer; }
+      button:focus-visible { outline: 3px solid #9fc2ff; outline-offset: 4px; }
+      button:disabled { cursor: not-allowed; opacity: .5; }
+      .image-picker {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        width: 100%;
+        min-height: 230px;
+        padding: 24px;
+        border: 2px dashed #6888b9;
+        border-radius: 14px;
+        background: #142035;
+      }
+      .image-picker:hover { background: #20314c; border-color: #9fc2ff; }
+      .placeholder { font-size: 3rem; color: #94bbff; }
+      .preview { width: 112px; height: 118px; object-fit: contain; }
+      .error { color: #ffb3b3; }
+
+      dialog {
+        width: min(760px, calc(100% - 32px));
+        max-height: 85vh;
+        max-height: 85dvh;
+        padding: 0;
+        border: 1px solid #526583;
+        border-radius: 20px;
+        background: #1a2639;
+        color: inherit;
+      }
+      dialog::backdrop { background: rgb(4 10 20 / 80%); }
+      .dialog-content { padding: 24px; }
+      .dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+      .close-button {
+        flex-shrink: 0;
+        padding: 8px 14px;
+        border: 1px solid #526583;
+        border-radius: 8px;
+        background: #263750;
+      }
+      .image-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
+        gap: 12px;
+        margin-top: 20px;
+      }
+      .image-option {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        padding: 12px 6px;
+        border: 2px solid #344763;
+        border-radius: 12px;
+        background: #142035;
+      }
+      .image-option:hover:not(:disabled) { border-color: #9fc2ff; background: #20314c; }
+      .image-option[aria-pressed="true"] { border-color: #9fc2ff; background: #2c4265; }
+      .image-option img { width: 94px; height: 99px; object-fit: contain; }
+      .image-option span { max-width: 100%; overflow-wrap: anywhere; font-size: .85rem; }
+
+      @media (max-width: 420px) {
+        body { padding: 28px 16px; }
+        .panel, .dialog-content { padding: 16px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="eyebrow">CLOUD ISLAND</div>
+      <h1>選擇屋主</h1>
+      <p class="muted">點擊下方圖片框，從 Landlord 圖庫選擇一張圖片。</p>
+      <section class="panel" aria-label="目前選擇的圖片">
+        <button id="image-picker" class="image-picker" type="button"
+          aria-haspopup="dialog" aria-controls="image-dialog">
+          <span id="placeholder" class="placeholder" aria-hidden="true">＋</span>
+          <img id="selected-image" class="preview" alt="" hidden>
+          <strong id="picker-label">點擊選擇圖片</strong>
+          <span class="muted">開啟 Landlord 圖庫</span>
+        </button>
+        <p id="preview-error" class="error" role="alert" hidden></p>
+      </section>
+      <noscript><p class="error">請啟用 JavaScript，才能開啟圖片選項。</p></noscript>
+    </main>
+
+    <dialog id="image-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-description">
+      <div class="dialog-content">
+        <div class="dialog-header">
+          <h2 id="dialog-title"></h2>
+          <button id="close-dialog" class="close-button" type="button" autofocus>關閉</button>
+        </div>
+        <p id="dialog-description" class="muted">選擇圖片即可套用；按 Esc 可取消。</p>
+        <p id="gallery-error" class="error" role="alert" hidden></p>
+        <div id="image-options" class="image-grid"></div>
+      </div>
+    </dialog>
+
+    <script>
+      // 直接調整陣列項目的位置即可改變顯示順序；程式不會重新排序。
+      const landlordImages = [
+        "alikita_trans.png",
+        "basilisk_trans.png",
+        "erskor_trans.png",
+        "finn_trans.png",
+        "gaggie_trans.png",
+        "haig_trans.png",
+        "ignacia_trans.png",
+        "lethia_trans.png",
+        "luna_trans.png",
+        "madeleine_trans.png",
+        "mareia_trans.png",
+        "melissa_trans.png",
+        "oscar_trans.png",
+        "patricia_trans.png",
+        "sylvie_trans.png",
+        "umbrion_trans.png",
+        "vespera_trans.png",
+        "williams_trans.png",
+        "wukong_trans.png",
+        "yorhm_trans.png",
+      ];
+
+      const picker = document.getElementById("image-picker");
+      const dialog = document.getElementById("image-dialog");
+      const options = document.getElementById("image-options");
+      const selectedImage = document.getElementById("selected-image");
+      const previewError = document.getElementById("preview-error");
+      const galleryError = document.getElementById("gallery-error");
+      let selectedFile = null;
+
+      picker.addEventListener("click", () => dialog.showModal());
+      document.getElementById("close-dialog").addEventListener("click", () => dialog.close());
+      dialog.addEventListener("click", (event) => {
+        if (event.target === dialog) dialog.close();
+      });
+      dialog.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          dialog.close();
+        }
+      });
+
+      selectedImage.addEventListener("error", () => {
+        previewError.textContent = `無法載入 Landlord/${selectedFile}，請確認圖片存在。`;
+        previewError.hidden = false;
+      });
+
+      for (const filename of landlordImages) {
+        const name = filename.replace(/_trans\.[^.]+$/, "").replace(/\.[^.]+$/, "");
+        const label = name.charAt(0).toUpperCase() + name.slice(1);
+        const source = `./Landlord/${encodeURIComponent(filename)}`;
+        const option = document.createElement("button");
+        option.type = "button";
+        option.className = "image-option";
+        option.dataset.filename = filename;
+        option.setAttribute("aria-label", `選擇 ${label}`);
+        option.setAttribute("aria-pressed", "false");
+
+        const image = document.createElement("img");
+        image.alt = "";
+        image.addEventListener("error", () => {
+          option.disabled = true;
+          option.title = `無法載入 ${filename}`;
+          galleryError.textContent = "部分圖片無法載入，請確認 Landlord 中的檔名與 landlordImages 陣列一致。";
+          galleryError.hidden = false;
+        });
+        image.src = source;
+
+        const caption = document.createElement("span");
+        caption.textContent = label;
+        option.append(image, caption);
+        option.addEventListener("click", () => {
+          selectedFile = filename;
+          previewError.hidden = true;
+          selectedImage.alt = label;
+          selectedImage.src = source;
+          selectedImage.hidden = false;
+          document.getElementById("placeholder").hidden = true;
+          document.getElementById("picker-label").textContent = `${label} · 點擊更換`;
+          for (const button of options.children) {
+            button.setAttribute("aria-pressed", String(button.dataset.filename === selectedFile));
+          }
+          dialog.close();
+        });
+        options.append(option);
+      }
+    </script>
+  </body>
+</html>
