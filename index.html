@@ -138,7 +138,7 @@
       <div id="share-result" hidden>
         <label for="share-url">分享網址</label>
         <input id="share-url" type="text" readonly>
-        <p class="muted" role="status">網址已產生，請複製後分享。連結記錄的是產生當下的設定。</p>
+        <p id="share-status" class="muted" role="status"></p>
       </div>
       <p id="state-error" class="error" role="alert" hidden></p>
       <div id="groups"></div>
@@ -411,6 +411,7 @@
       const shareSettingsButton = document.getElementById("share-settings");
       const shareResult = document.getElementById("share-result");
       const shareUrlInput = document.getElementById("share-url");
+      const shareStatus = document.getElementById("share-status");
       const stateError = document.getElementById("state-error");
       const dialog = document.getElementById("image-dialog");
       const options = document.getElementById("image-options");
@@ -543,6 +544,8 @@
         shareRevision++;
         shareResult.hidden = true;
         shareUrlInput.value = "";
+        shareStatus.textContent = "";
+        shareStatus.className = "muted";
       }
 
       function validateSharedState(state) {
@@ -643,6 +646,22 @@
           shareResult.hidden = false;
           shareUrlInput.focus();
           shareUrlInput.select();
+          if (typeof navigator.clipboard?.writeText !== "function") {
+            shareStatus.className = "error";
+            shareStatus.textContent = "網址已產生，但此瀏覽器不支援自動複製。請手動複製網址欄位。";
+            return;
+          }
+          shareStatus.textContent = "網址已產生，正在複製至剪貼簿…";
+          try {
+            await navigator.clipboard.writeText(url.href);
+            if (revision !== shareRevision) return;
+            shareStatus.textContent = "分享網址已複製到剪貼簿，可直接貼上分享。連結記錄的是產生當下的設定。";
+          } catch (error) {
+            if (!(error instanceof DOMException)) throw error;
+            if (revision !== shareRevision) return;
+            shareStatus.className = "error";
+            shareStatus.textContent = "網址已產生，但瀏覽器未允許自動複製。請允許剪貼簿權限，或手動複製網址欄位。";
+          }
         } catch (error) {
           if (!(error instanceof SharedStateError)) throw error;
           if (revision !== shareRevision) return;
