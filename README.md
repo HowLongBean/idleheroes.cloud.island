@@ -12,6 +12,31 @@ Cloud Island Simulator
 選擇後會顯示圖片，再次點擊即可更換。關閉按鈕、Esc 或點擊視窗外可取消選擇。
 頁面使用純 HTML、CSS 與 JavaScript，不需要安裝套件或後端；重新整理後會清除選擇。
 
+### Group 與動態新增、刪除
+
+每個 group 包含一位屋主與四個房客，使用 `group-template` 建立，預設只顯示一組。
+點擊 **Add group** 可新增一組；點擊 **Delete group** 只會刪除目前最後一組及其選擇。
+只剩一組時會隱藏 Delete group 按鈕，再次新增後會重新顯示。
+在頁面完成初始化後呼叫 `addGroup()`，即可在下方新增完整的一組，不需複製 HTML 或綁定事件：
+
+```js
+const group = addGroup();
+
+// 取得這組目前的選擇；尚未選擇時檔名為 null、屋主索引為 -1。
+group.selectedFile;
+group.selectedLandlordIndex;
+group.tenantSlots.map(slot => slot.selectedFile);
+```
+
+- 每次呼叫都建立全新、未選取的 group，並回傳該組的狀態物件；`group.element` 是對應的 DOM 容器。
+- 每組共用下方的圖片設定陣列，但屋主與房客的選擇、預覽、錯誤提示皆獨立。
+- 更換屋主只會清除同一組的四個房客，不會改變其他組。
+- 每組都有唯一的 ID，例如 `group-1`、`group-2`；組內元素以容器限定範圍查找，避免重複 ID。
+- 所有組共用同一個圖庫視窗，選取結果只會套用到開啟它的組與選框。
+- 也可呼叫 `deleteGroup()` 刪除最後一組：成功回傳 `true`；只剩一組時不會刪除，會在主控台提示並回傳 `false`。
+- 刪除不會影響其他組的選擇；新增的組不會繼承已刪除組的狀態。組 ID 持續遞增，不會重複使用。
+- 重新整理後回到預設一組。
+
 ### 調整屋主圖片名稱與順序
 
 編輯 [index.html](./index.html) 中的 `landlordImages` 陣列：

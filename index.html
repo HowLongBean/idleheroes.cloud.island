@@ -20,6 +20,7 @@
       p { line-height: 1.6; }
       .eyebrow { color: #94bbff; letter-spacing: .12em; font-size: .8rem; }
       .muted { color: #aab8cd; }
+      .group-controls { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
       .picker-panels {
         display: grid;
         grid-template-columns: repeat(5, minmax(220px, 1fr));
@@ -74,13 +75,14 @@
       dialog::backdrop { background: rgb(4 10 20 / 80%); }
       .dialog-content { padding: 24px; }
       .dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-      .close-button {
+      .close-button, .group-button {
         flex-shrink: 0;
         padding: 8px 14px;
         border: 1px solid #526583;
         border-radius: 8px;
         background: #263750;
       }
+      .group-button:hover { background: #344b6a; }
       .image-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
@@ -115,60 +117,68 @@
   <body>
     <main>
       <div class="eyebrow">CLOUD ISLAND</div>
-      <div class="picker-panels" role="group" aria-label="屋主與房客選擇" tabindex="0">
-        <section class="panel" aria-labelledby="landlord-title">
-          <h1 id="landlord-title" class="section-title">屋主</h1>
-          <button id="image-picker" class="image-picker" type="button"
-            aria-haspopup="dialog" aria-controls="image-dialog" aria-labelledby="landlord-title">
-            <span id="placeholder" class="placeholder" aria-hidden="true">＋</span>
-            <img id="selected-image" class="preview" alt="" hidden>
-            <strong id="picker-label"></strong>
-          </button>
-          <p id="preview-error" class="error" role="alert" hidden></p>
-        </section>
-        <section class="panel" aria-labelledby="tenant-title">
-          <h2 id="tenant-title" class="section-title">房客 1</h2>
-          <button id="tenant-picker" class="image-picker tenant-picker" type="button"
-            aria-haspopup="dialog" aria-controls="image-dialog" aria-labelledby="tenant-title" disabled>
-            <span class="placeholder" aria-hidden="true">＋</span>
-            <img id="selected-tenant-image" class="preview" alt="" hidden>
-            <strong></strong>
-          </button>
-          <p id="tenant-preview-error" class="error" role="alert" hidden></p>
-        </section>
-        <section class="panel" aria-labelledby="tenant-title-2">
-          <h2 id="tenant-title-2" class="section-title">房客 2</h2>
-          <button id="tenant-picker-2" class="image-picker tenant-picker" type="button"
-            aria-haspopup="dialog" aria-controls="image-dialog" aria-labelledby="tenant-title-2" disabled>
-            <span class="placeholder" aria-hidden="true">＋</span>
-            <img id="selected-tenant-image-2" class="preview" alt="" hidden>
-            <strong></strong>
-          </button>
-          <p id="tenant-preview-error-2" class="error" role="alert" hidden></p>
-        </section>
-        <section class="panel" aria-labelledby="tenant-title-3">
-          <h2 id="tenant-title-3" class="section-title">房客 3</h2>
-          <button id="tenant-picker-3" class="image-picker tenant-picker" type="button"
-            aria-haspopup="dialog" aria-controls="image-dialog" aria-labelledby="tenant-title-3" disabled>
-            <span class="placeholder" aria-hidden="true">＋</span>
-            <img id="selected-tenant-image-3" class="preview" alt="" hidden>
-            <strong></strong>
-          </button>
-          <p id="tenant-preview-error-3" class="error" role="alert" hidden></p>
-        </section>
-        <section class="panel" aria-labelledby="tenant-title-4">
-          <h2 id="tenant-title-4" class="section-title">房客 4</h2>
-          <button id="tenant-picker-4" class="image-picker tenant-picker" type="button"
-            aria-haspopup="dialog" aria-controls="image-dialog" aria-labelledby="tenant-title-4" disabled>
-            <span class="placeholder" aria-hidden="true">＋</span>
-            <img id="selected-tenant-image-4" class="preview" alt="" hidden>
-            <strong></strong>
-          </button>
-          <p id="tenant-preview-error-4" class="error" role="alert" hidden></p>
-        </section>
+      <div class="group-controls">
+        <button id="add-group" class="group-button" type="button" aria-controls="groups">住宅新建</button>
+        <button id="delete-group" class="group-button" type="button" aria-controls="groups" hidden>住宅拆遷</button>
       </div>
+      <div id="groups"></div>
       <noscript><p class="error">請啟用 JavaScript，才能開啟圖片選項。</p></noscript>
     </main>
+
+    <template id="group-template">
+      <div class="picker-panels selection-group" role="group" tabindex="0">
+        <section class="panel">
+          <h1 class="section-title">屋主</h1>
+          <button class="image-picker landlord-picker" type="button"
+            aria-haspopup="dialog" aria-controls="image-dialog">
+            <span class="placeholder" aria-hidden="true">＋</span>
+            <img class="preview" alt="" hidden>
+            <strong></strong>
+          </button>
+          <p class="error" role="alert" hidden></p>
+        </section>
+        <section class="panel">
+          <h2 class="section-title">房客 1</h2>
+          <button class="image-picker tenant-picker" type="button"
+            aria-haspopup="dialog" aria-controls="image-dialog" disabled>
+            <span class="placeholder" aria-hidden="true">＋</span>
+            <img class="preview" alt="" hidden>
+            <strong></strong>
+          </button>
+          <p class="error" role="alert" hidden></p>
+        </section>
+        <section class="panel">
+          <h2 class="section-title">房客 2</h2>
+          <button class="image-picker tenant-picker" type="button"
+            aria-haspopup="dialog" aria-controls="image-dialog" disabled>
+            <span class="placeholder" aria-hidden="true">＋</span>
+            <img class="preview" alt="" hidden>
+            <strong></strong>
+          </button>
+          <p class="error" role="alert" hidden></p>
+        </section>
+        <section class="panel">
+          <h2 class="section-title">房客 3</h2>
+          <button class="image-picker tenant-picker" type="button"
+            aria-haspopup="dialog" aria-controls="image-dialog" disabled>
+            <span class="placeholder" aria-hidden="true">＋</span>
+            <img class="preview" alt="" hidden>
+            <strong></strong>
+          </button>
+          <p class="error" role="alert" hidden></p>
+        </section>
+        <section class="panel">
+          <h2 class="section-title">房客 4</h2>
+          <button class="image-picker tenant-picker" type="button"
+            aria-haspopup="dialog" aria-controls="image-dialog" disabled>
+            <span class="placeholder" aria-hidden="true">＋</span>
+            <img class="preview" alt="" hidden>
+            <strong></strong>
+          </button>
+          <p class="error" role="alert" hidden></p>
+        </section>
+      </div>
+    </template>
 
     <dialog id="image-dialog" aria-label="圖片選擇" aria-describedby="dialog-description">
       <div class="dialog-content">
@@ -365,53 +375,23 @@
         [...allTenantImages], // 19: yorhm_trans.png
       ];
 
-      const picker = document.getElementById("image-picker");
-      const tenantSlots = [
-        {
-          button: document.getElementById("tenant-picker"),
-          images: tenantImages, arrayName: "tenantImages", selectedFile: null,
-        },
-        {
-          button: document.getElementById("tenant-picker-2"),
-          images: tenantImages2, arrayName: "tenantImages2", selectedFile: null,
-        },
-        {
-          button: document.getElementById("tenant-picker-3"),
-          images: tenantImages3, arrayName: "tenantImages3", selectedFile: null,
-        },
-        {
-          button: document.getElementById("tenant-picker-4"),
-          images: tenantImages4, arrayName: "tenantImages4", selectedFile: null,
-        },
+      const tenantConfigurations = [
+        { images: tenantImages, arrayName: "tenantImages" },
+        { images: tenantImages2, arrayName: "tenantImages2" },
+        { images: tenantImages3, arrayName: "tenantImages3" },
+        { images: tenantImages4, arrayName: "tenantImages4" },
       ];
+      const groupsContainer = document.getElementById("groups");
+      const groupTemplate = document.getElementById("group-template");
+      const addGroupButton = document.getElementById("add-group");
+      const deleteGroupButton = document.getElementById("delete-group");
       const dialog = document.getElementById("image-dialog");
       const options = document.getElementById("image-options");
       const galleryError = document.getElementById("gallery-error");
-      let selectedFile = null;
-      let selectedLandlordIndex = -1;
+      let nextGroupId = 1;
 
-      picker.addEventListener("click", () => {
-        openGallery(landlordImages, "Landlord", selectedFile, (image, index) => {
-          selectedFile = image.filename;
-          setPreview(picker, "Landlord", image);
-          if (selectedLandlordIndex !== index) {
-            selectedLandlordIndex = index;
-            tenantSlots.forEach(resetTenant);
-          }
-        });
-      });
-      tenantSlots.forEach((slot, index) => {
-        slot.button.addEventListener("click", () => {
-          if (slot.button.disabled) return;
-          const images = slot.images[selectedLandlordIndex].map(filename => ({
-            filename, name: imageLabel(filename),
-          }));
-          openGallery(images, "Tenant", slot.selectedFile, (image) => {
-            slot.selectedFile = image.filename;
-            setPreview(slot.button, "Tenant", image);
-          }, `選擇房客 ${index + 1}`);
-        });
-      });
+      addGroupButton.addEventListener("click", addGroup);
+      deleteGroupButton.addEventListener("click", deleteGroup);
       document.getElementById("close-dialog").addEventListener("click", () => dialog.close());
       dialog.addEventListener("click", (event) => {
         if (event.target === dialog) dialog.close();
@@ -423,14 +403,93 @@
         }
       });
 
-      for (const [button, folder] of [[picker, "Landlord"], ...tenantSlots.map(slot => [slot.button, "Tenant"])]) {
-        const image = button.querySelector(".preview");
-        const error = button.parentElement.querySelector(".error");
-        image.addEventListener("error", () => {
-          if (!image.hasAttribute("src")) return;
-          error.textContent = `無法載入 ${folder}/${image.dataset.filename}，請確認圖片存在。`;
-          error.hidden = false;
+      function addGroup() {
+        const number = nextGroupId++;
+        const element = groupTemplate.content.firstElementChild.cloneNode(true);
+        element.id = `group-${number}`;
+        element.setAttribute("aria-label", `第 ${number} 組屋主與房客選擇`);
+        element.querySelectorAll(".panel").forEach((panel, index) => {
+          const heading = panel.querySelector(".section-title");
+          heading.id = `${element.id}-title-${index}`;
+          panel.setAttribute("aria-labelledby", heading.id);
+          panel.querySelector(".image-picker").setAttribute("aria-labelledby", heading.id);
         });
+
+        const picker = element.querySelector(".landlord-picker");
+        const tenantPickers = element.querySelectorAll(".tenant-picker");
+        const group = {
+          element,
+          selectedFile: null,
+          selectedLandlordIndex: -1,
+          tenantSlots: tenantConfigurations.map((configuration, index) => ({
+            ...configuration,
+            button: tenantPickers[index],
+            selectedFile: null,
+          })),
+        };
+
+        picker.addEventListener("click", () => {
+          dialog.dataset.groupId = element.id;
+          openGallery(landlordImages, "Landlord", group.selectedFile, (image, index) => {
+            group.selectedFile = image.filename;
+            setPreview(picker, "Landlord", image);
+            if (group.selectedLandlordIndex !== index) {
+              group.selectedLandlordIndex = index;
+              group.tenantSlots.forEach(slot => resetTenant(slot, index));
+            }
+          }, `第 ${number} 組：選擇屋主`);
+        });
+        group.tenantSlots.forEach((slot, index) => {
+          slot.button.addEventListener("click", () => {
+            if (slot.button.disabled) return;
+            dialog.dataset.groupId = element.id;
+            const images = slot.images[group.selectedLandlordIndex].map(filename => ({
+              filename, name: imageLabel(filename),
+            }));
+            openGallery(images, "Tenant", slot.selectedFile, (image) => {
+              slot.selectedFile = image.filename;
+              setPreview(slot.button, "Tenant", image);
+            }, `第 ${number} 組：選擇房客 ${index + 1}`);
+          });
+        });
+
+        for (const [button, folder] of [[picker, "Landlord"], ...group.tenantSlots.map(slot => [slot.button, "Tenant"])]) {
+          const image = button.querySelector(".preview");
+          const error = button.parentElement.querySelector(".error");
+          image.addEventListener("error", () => {
+            if (!image.hasAttribute("src")) return;
+            error.textContent = `無法載入 ${folder}/${image.dataset.filename}，請確認圖片存在。`;
+            error.hidden = false;
+          });
+        }
+
+        groupsContainer.append(element);
+        deleteGroupButton.hidden = groupsContainer.childElementCount <= 1;
+        return group;
+      }
+
+      function deleteGroup() {
+        if (groupsContainer.childElementCount <= 1) {
+          console.warn("至少需保留一組，無法刪除最後一組。");
+          return false;
+        }
+
+        const lastGroup = groupsContainer.lastElementChild;
+        const focusedElement = document.activeElement;
+        const ownsGallery = dialog.dataset.groupId === lastGroup.id;
+        const closesGallery = ownsGallery && dialog.open;
+        if (ownsGallery) {
+          dialog.close();
+          options.replaceChildren();
+          delete dialog.dataset.groupId;
+        }
+        lastGroup.remove();
+        deleteGroupButton.hidden = groupsContainer.childElementCount <= 1;
+        if (closesGallery || lastGroup.contains(focusedElement)
+          || (deleteGroupButton.hidden && focusedElement === deleteGroupButton)) {
+          (deleteGroupButton.hidden ? addGroupButton : deleteGroupButton).focus();
+        }
+        return true;
       }
 
       function imageLabel(filename) {
@@ -449,7 +508,7 @@
         button.querySelector("strong").textContent = `${label}`;
       }
 
-      function resetTenant(slot) {
+      function resetTenant(slot, selectedLandlordIndex) {
         slot.selectedFile = null;
         const tenantPicker = slot.button;
         const image = tenantPicker.querySelector(".preview");
@@ -511,6 +570,8 @@
         });
         dialog.showModal();
       }
+
+      addGroup();
     </script>
   </body>
 </html>
