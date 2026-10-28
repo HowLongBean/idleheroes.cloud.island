@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Cloud Island · 圖片選擇</title>
+    <title>雲舒島模擬器</title>
     <style>
       :root {
         color-scheme: dark;
@@ -14,14 +14,22 @@
 
       * { box-sizing: border-box; }
       body { margin: 0; padding: 48px 20px; }
-      main { max-width: 720px; margin: auto; }
+      main { max-width: 1600px; margin: auto; }
       h1 { margin: 8px 0 12px; font-size: clamp(1.8rem, 5vw, 2.5rem); }
       h2 { margin: 0; font-size: 1.25rem; }
       p { line-height: 1.6; }
       .eyebrow { color: #94bbff; letter-spacing: .12em; font-size: .8rem; }
       .muted { color: #aab8cd; }
-      .panel {
+      .picker-panels {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(220px, 1fr));
+        align-items: start;
+        gap: 20px;
         margin-top: 32px;
+        overflow-x: auto;
+      }
+      .panel {
+        min-width: 0;
         padding: 28px;
         border: 1px solid #34425a;
         border-radius: 20px;
@@ -29,7 +37,7 @@
       }
 
       button { font: inherit; color: inherit; cursor: pointer; }
-      button:focus-visible { outline: 3px solid #9fc2ff; outline-offset: 4px; }
+      button:focus-visible, .picker-panels:focus-visible { outline: 3px solid #9fc2ff; outline-offset: 4px; }
       button:disabled { cursor: not-allowed; opacity: .5; }
       .image-picker {
         display: flex;
@@ -40,14 +48,17 @@
         width: 100%;
         min-height: 230px;
         padding: 24px;
+        overflow-wrap: anywhere;
         border: 2px dashed #6888b9;
         border-radius: 14px;
         background: #142035;
       }
-      .image-picker:hover { background: #20314c; border-color: #9fc2ff; }
+      .image-picker:hover:not(:disabled) { background: #20314c; border-color: #9fc2ff; }
+      .image-picker > * { max-width: 100%; }
+      .section-title { margin: 0 0 20px; font-size: 1.25rem; }
       .placeholder { font-size: 3rem; color: #94bbff; }
       .preview { width: 112px; height: 118px; object-fit: contain; }
-      .error { color: #ffb3b3; }
+      .error { color: #ffb3b3; overflow-wrap: anywhere; }
 
       dialog {
         width: min(760px, calc(100% - 32px));
@@ -93,29 +104,72 @@
 
       @media (max-width: 420px) {
         body { padding: 28px 16px; }
-        .panel, .dialog-content { padding: 16px; }
+        .picker-panels { gap: 12px; }
+        .panel { padding: 12px; }
+        .image-picker { padding: 16px 8px; }
+        .dialog-content { padding: 16px; }
       }
     </style>
   </head>
   <body>
     <main>
       <div class="eyebrow">CLOUD ISLAND</div>
-      <h1>選擇屋主</h1>
-      <p class="muted">點擊下方圖片框，從 Landlord 圖庫選擇一張圖片。</p>
-      <section class="panel" aria-label="目前選擇的圖片">
-        <button id="image-picker" class="image-picker" type="button"
-          aria-haspopup="dialog" aria-controls="image-dialog">
-          <span id="placeholder" class="placeholder" aria-hidden="true">＋</span>
-          <img id="selected-image" class="preview" alt="" hidden>
-          <strong id="picker-label">點擊選擇圖片</strong>
-          <span class="muted">開啟 Landlord 圖庫</span>
-        </button>
-        <p id="preview-error" class="error" role="alert" hidden></p>
-      </section>
+      <div class="picker-panels" role="group" aria-label="屋主與房客選擇" tabindex="0">
+        <section class="panel" aria-labelledby="landlord-title">
+          <h1 id="landlord-title" class="section-title">屋主</h1>
+          <button id="image-picker" class="image-picker" type="button"
+            aria-haspopup="dialog" aria-controls="image-dialog">
+            <span id="placeholder" class="placeholder" aria-hidden="true">＋</span>
+            <img id="selected-image" class="preview" alt="" hidden>
+            <strong id="picker-label">點擊選擇圖片</strong>
+          </button>
+          <p id="preview-error" class="error" role="alert" hidden></p>
+        </section>
+        <section class="panel" aria-labelledby="tenant-title">
+          <h2 id="tenant-title" class="section-title">房客 1</h2>
+          <button id="tenant-picker" class="image-picker tenant-picker" type="button"
+            aria-haspopup="dialog" aria-controls="image-dialog" disabled>
+            <span class="placeholder" aria-hidden="true">＋</span>
+            <img id="selected-tenant-image" class="preview" alt="" hidden>
+            <strong>請先選擇屋主</strong>
+          </button>
+          <p id="tenant-preview-error" class="error" role="alert" hidden></p>
+        </section>
+        <section class="panel" aria-labelledby="tenant-title-2">
+          <h2 id="tenant-title-2" class="section-title">房客 2</h2>
+          <button id="tenant-picker-2" class="image-picker tenant-picker" type="button"
+            aria-haspopup="dialog" aria-controls="image-dialog" disabled>
+            <span class="placeholder" aria-hidden="true">＋</span>
+            <img id="selected-tenant-image-2" class="preview" alt="" hidden>
+            <strong>請先選擇屋主</strong>
+          </button>
+          <p id="tenant-preview-error-2" class="error" role="alert" hidden></p>
+        </section>
+        <section class="panel" aria-labelledby="tenant-title-3">
+          <h2 id="tenant-title-3" class="section-title">房客 3</h2>
+          <button id="tenant-picker-3" class="image-picker tenant-picker" type="button"
+            aria-haspopup="dialog" aria-controls="image-dialog" disabled>
+            <span class="placeholder" aria-hidden="true">＋</span>
+            <img id="selected-tenant-image-3" class="preview" alt="" hidden>
+            <strong>請先選擇屋主</strong>
+          </button>
+          <p id="tenant-preview-error-3" class="error" role="alert" hidden></p>
+        </section>
+        <section class="panel" aria-labelledby="tenant-title-4">
+          <h2 id="tenant-title-4" class="section-title">房客 4</h2>
+          <button id="tenant-picker-4" class="image-picker tenant-picker" type="button"
+            aria-haspopup="dialog" aria-controls="image-dialog" disabled>
+            <span class="placeholder" aria-hidden="true">＋</span>
+            <img id="selected-tenant-image-4" class="preview" alt="" hidden>
+            <strong>請先選擇屋主</strong>
+          </button>
+          <p id="tenant-preview-error-4" class="error" role="alert" hidden></p>
+        </section>
+      </div>
       <noscript><p class="error">請啟用 JavaScript，才能開啟圖片選項。</p></noscript>
     </main>
 
-    <dialog id="image-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-description">
+    <dialog id="image-dialog" aria-label="圖片選擇" aria-describedby="dialog-description">
       <div class="dialog-content">
         <div class="dialog-header">
           <h2 id="dialog-title"></h2>
@@ -152,15 +206,208 @@
         "yorhm_trans.png",
       ];
 
+      const allTenantImages = [
+        "alikita.png",
+        "alikita_trans.png",
+        "annabelle.png",
+        "aranea.png",
+        "aranea_trans.png",
+        "asmodel.png",
+        "asmodel_trans.png",
+        "aylamak.png",
+        "aylamak_trans.png",
+        "azrael.png",
+        "azrael_trans.png",
+        "basilisk.png",
+        "basilisk_trans.png",
+        "betty.png",
+        "betty_trans.png",
+        "elena.png",
+        "elena_trans.png",
+        "erskor.png",
+        "erskor_trans.png",
+        "finn.png",
+        "finn_trans.png",
+        "freya.png",
+        "gaggie.png",
+        "geester.png",
+        "geester_trans.png",
+        "haig.png",
+        "haig_trans.png",
+        "ignacia.png",
+        "ignacia_trans.png",
+        "jahra_trans.png",
+        "lethia.png",
+        "lethia_trans.png",
+        "luna.png",
+        "luna_trans.png",
+        "madeleine.png",
+        "madeleine_trans.png",
+        "mareia.png",
+        "mareia_trans.png",
+        "melissa.png",
+        "melissa_trans.png",
+        "natalie.png",
+        "natalie_trans.png",
+        "oscar.png",
+        "oscar_trans.png",
+        "patricia.png",
+        "patricia_trans.png",
+        "sylvie.png",
+        "sylvie_trans.png",
+        "umbrion.png",
+        "umbrion_trans.png",
+        "vesa_trans.png",
+        "vespera.png",
+        "vespera_trans.png",
+        "vulcan.png",
+        "waldeck.png",
+        "williams.png",
+        "williams_trans.png",
+        "wukong.png",
+        "wukong_trans.png",
+        "yorhm.png",
+        "yorhm_trans.png",
+      ];
+
+      // tenantImages[i] 對應 landlordImages[i]；可將 [...allTenantImages] 換成指定檔名陣列。
+      const tenantImages = [
+        [...allTenantImages], // 0: alikita_trans.png
+        [...allTenantImages], // 1: basilisk_trans.png
+        [...allTenantImages], // 2: erskor_trans.png
+        [...allTenantImages], // 3: finn_trans.png
+        [...allTenantImages], // 4: gaggie_trans.png
+        [...allTenantImages], // 5: haig_trans.png
+        [...allTenantImages], // 6: ignacia_trans.png
+        [...allTenantImages], // 7: lethia_trans.png
+        [...allTenantImages], // 8: luna_trans.png
+        [...allTenantImages], // 9: madeleine_trans.png
+        [...allTenantImages], // 10: mareia_trans.png
+        [...allTenantImages], // 11: melissa_trans.png
+        [...allTenantImages], // 12: oscar_trans.png
+        [...allTenantImages], // 13: patricia_trans.png
+        [...allTenantImages], // 14: sylvie_trans.png
+        [...allTenantImages], // 15: umbrion_trans.png
+        [...allTenantImages], // 16: vespera_trans.png
+        [...allTenantImages], // 17: williams_trans.png
+        [...allTenantImages], // 18: wukong_trans.png
+        [...allTenantImages], // 19: yorhm_trans.png
+      ];
+
+      // 房客 2～4 各自使用獨立清單，索引同樣對應 landlordImages。
+      const tenantImages2 = [
+        [...allTenantImages], // 0: alikita_trans.png
+        [...allTenantImages], // 1: basilisk_trans.png
+        [...allTenantImages], // 2: erskor_trans.png
+        [...allTenantImages], // 3: finn_trans.png
+        [...allTenantImages], // 4: gaggie_trans.png
+        [...allTenantImages], // 5: haig_trans.png
+        [...allTenantImages], // 6: ignacia_trans.png
+        [...allTenantImages], // 7: lethia_trans.png
+        [...allTenantImages], // 8: luna_trans.png
+        [...allTenantImages], // 9: madeleine_trans.png
+        [...allTenantImages], // 10: mareia_trans.png
+        [...allTenantImages], // 11: melissa_trans.png
+        [...allTenantImages], // 12: oscar_trans.png
+        [...allTenantImages], // 13: patricia_trans.png
+        [...allTenantImages], // 14: sylvie_trans.png
+        [...allTenantImages], // 15: umbrion_trans.png
+        [...allTenantImages], // 16: vespera_trans.png
+        [...allTenantImages], // 17: williams_trans.png
+        [...allTenantImages], // 18: wukong_trans.png
+        [...allTenantImages], // 19: yorhm_trans.png
+      ];
+
+      const tenantImages3 = [
+        [...allTenantImages], // 0: alikita_trans.png
+        [...allTenantImages], // 1: basilisk_trans.png
+        [...allTenantImages], // 2: erskor_trans.png
+        [...allTenantImages], // 3: finn_trans.png
+        [...allTenantImages], // 4: gaggie_trans.png
+        [...allTenantImages], // 5: haig_trans.png
+        [...allTenantImages], // 6: ignacia_trans.png
+        [...allTenantImages], // 7: lethia_trans.png
+        [...allTenantImages], // 8: luna_trans.png
+        [...allTenantImages], // 9: madeleine_trans.png
+        [...allTenantImages], // 10: mareia_trans.png
+        [...allTenantImages], // 11: melissa_trans.png
+        [...allTenantImages], // 12: oscar_trans.png
+        [...allTenantImages], // 13: patricia_trans.png
+        [...allTenantImages], // 14: sylvie_trans.png
+        [...allTenantImages], // 15: umbrion_trans.png
+        [...allTenantImages], // 16: vespera_trans.png
+        [...allTenantImages], // 17: williams_trans.png
+        [...allTenantImages], // 18: wukong_trans.png
+        [...allTenantImages], // 19: yorhm_trans.png
+      ];
+
+      const tenantImages4 = [
+        [...allTenantImages], // 0: alikita_trans.png
+        [...allTenantImages], // 1: basilisk_trans.png
+        [...allTenantImages], // 2: erskor_trans.png
+        [...allTenantImages], // 3: finn_trans.png
+        [...allTenantImages], // 4: gaggie_trans.png
+        [...allTenantImages], // 5: haig_trans.png
+        [...allTenantImages], // 6: ignacia_trans.png
+        [...allTenantImages], // 7: lethia_trans.png
+        [...allTenantImages], // 8: luna_trans.png
+        [...allTenantImages], // 9: madeleine_trans.png
+        [...allTenantImages], // 10: mareia_trans.png
+        [...allTenantImages], // 11: melissa_trans.png
+        [...allTenantImages], // 12: oscar_trans.png
+        [...allTenantImages], // 13: patricia_trans.png
+        [...allTenantImages], // 14: sylvie_trans.png
+        [...allTenantImages], // 15: umbrion_trans.png
+        [...allTenantImages], // 16: vespera_trans.png
+        [...allTenantImages], // 17: williams_trans.png
+        [...allTenantImages], // 18: wukong_trans.png
+        [...allTenantImages], // 19: yorhm_trans.png
+      ];
+
       const picker = document.getElementById("image-picker");
+      const tenantSlots = [
+        {
+          button: document.getElementById("tenant-picker"),
+          images: tenantImages, arrayName: "tenantImages", selectedFile: null,
+        },
+        {
+          button: document.getElementById("tenant-picker-2"),
+          images: tenantImages2, arrayName: "tenantImages2", selectedFile: null,
+        },
+        {
+          button: document.getElementById("tenant-picker-3"),
+          images: tenantImages3, arrayName: "tenantImages3", selectedFile: null,
+        },
+        {
+          button: document.getElementById("tenant-picker-4"),
+          images: tenantImages4, arrayName: "tenantImages4", selectedFile: null,
+        },
+      ];
       const dialog = document.getElementById("image-dialog");
       const options = document.getElementById("image-options");
-      const selectedImage = document.getElementById("selected-image");
-      const previewError = document.getElementById("preview-error");
       const galleryError = document.getElementById("gallery-error");
       let selectedFile = null;
+      let selectedLandlordIndex = -1;
 
-      picker.addEventListener("click", () => dialog.showModal());
+      picker.addEventListener("click", () => {
+        openGallery(landlordImages, "Landlord", selectedFile, (filename, index) => {
+          selectedFile = filename;
+          setPreview(picker, "Landlord", filename);
+          if (selectedLandlordIndex !== index) {
+            selectedLandlordIndex = index;
+            tenantSlots.forEach(resetTenant);
+          }
+        });
+      });
+      tenantSlots.forEach((slot, index) => {
+        slot.button.addEventListener("click", () => {
+          if (slot.button.disabled) return;
+          openGallery(slot.images[selectedLandlordIndex], "Tenant", slot.selectedFile, (filename) => {
+            slot.selectedFile = filename;
+            setPreview(slot.button, "Tenant", filename);
+          }, `選擇房客 ${index + 1}`);
+        });
+      });
       document.getElementById("close-dialog").addEventListener("click", () => dialog.close());
       dialog.addEventListener("click", (event) => {
         if (event.target === dialog) dialog.close();
@@ -172,49 +419,95 @@
         }
       });
 
-      selectedImage.addEventListener("error", () => {
-        previewError.textContent = `無法載入 Landlord/${selectedFile}，請確認圖片存在。`;
-        previewError.hidden = false;
-      });
-
-      for (const filename of landlordImages) {
-        const name = filename.replace(/_trans\.[^.]+$/, "").replace(/\.[^.]+$/, "");
-        const label = name.charAt(0).toUpperCase() + name.slice(1);
-        const source = `./Landlord/${encodeURIComponent(filename)}`;
-        const option = document.createElement("button");
-        option.type = "button";
-        option.className = "image-option";
-        option.dataset.filename = filename;
-        option.setAttribute("aria-label", `選擇 ${label}`);
-        option.setAttribute("aria-pressed", "false");
-
-        const image = document.createElement("img");
-        image.alt = "";
+      for (const [button, folder] of [[picker, "Landlord"], ...tenantSlots.map(slot => [slot.button, "Tenant"])]) {
+        const image = button.querySelector(".preview");
+        const error = button.parentElement.querySelector(".error");
         image.addEventListener("error", () => {
-          option.disabled = true;
-          option.title = `無法載入 ${filename}`;
-          galleryError.textContent = "部分圖片無法載入，請確認 Landlord 中的檔名與 landlordImages 陣列一致。";
-          galleryError.hidden = false;
+          if (!image.hasAttribute("src")) return;
+          error.textContent = `無法載入 ${folder}/${image.dataset.filename}，請確認圖片存在。`;
+          error.hidden = false;
         });
-        image.src = source;
+      }
 
-        const caption = document.createElement("span");
-        caption.textContent = label;
-        option.append(image, caption);
-        option.addEventListener("click", () => {
-          selectedFile = filename;
-          previewError.hidden = true;
-          selectedImage.alt = label;
-          selectedImage.src = source;
-          selectedImage.hidden = false;
-          document.getElementById("placeholder").hidden = true;
-          document.getElementById("picker-label").textContent = `${label} · 點擊更換`;
-          for (const button of options.children) {
-            button.setAttribute("aria-pressed", String(button.dataset.filename === selectedFile));
-          }
-          dialog.close();
+      function imageLabel(filename, folder) {
+        const name = filename.replace(/\.[^.]+$/, "");
+        const label = folder === "Landlord" ? name.replace(/_trans$/, "") : name;
+        return label.charAt(0).toUpperCase() + label.slice(1);
+      }
+
+      function setPreview(button, folder, filename) {
+        const image = button.querySelector(".preview");
+        const label = imageLabel(filename, folder);
+        button.parentElement.querySelector(".error").hidden = true;
+        image.dataset.filename = filename;
+        image.alt = label;
+        image.src = `./${folder}/${encodeURIComponent(filename)}`;
+        image.hidden = false;
+        button.querySelector(".placeholder").hidden = true;
+        button.querySelector("strong").textContent = `${label} · 點擊更換`;
+      }
+
+      function resetTenant(slot) {
+        slot.selectedFile = null;
+        const tenantPicker = slot.button;
+        const image = tenantPicker.querySelector(".preview");
+        image.hidden = true;
+        image.removeAttribute("src");
+        image.alt = "";
+        delete image.dataset.filename;
+        tenantPicker.querySelector(".placeholder").hidden = false;
+        const error = tenantPicker.parentElement.querySelector(".error");
+        error.hidden = true;
+        const filenames = slot.images[selectedLandlordIndex];
+        const valid = Array.isArray(filenames)
+          && filenames.every(filename => typeof filename === "string" && filename.trim().length > 0);
+        if (!valid) {
+          tenantPicker.disabled = true;
+          tenantPicker.querySelector("strong").textContent = "房客清單設定錯誤";
+          error.textContent = `請將 ${slot.arrayName}[${selectedLandlordIndex}] 設定為圖片檔名陣列。`;
+          error.hidden = false;
+          return;
+        }
+        tenantPicker.disabled = filenames.length === 0;
+        tenantPicker.querySelector("strong").textContent = filenames.length === 0
+          ? "此屋主尚未設定可選房客"
+          : "點擊選擇房客圖片";
+      }
+
+      function openGallery(filenames, folder, selected, onSelect, title = "選擇屋主") {
+        options.replaceChildren();
+        galleryError.hidden = true;
+        dialog.setAttribute("aria-label", title);
+        filenames.forEach((filename, index) => {
+          const label = imageLabel(filename, folder);
+          const option = document.createElement("button");
+          option.type = "button";
+          option.className = "image-option";
+          option.dataset.filename = filename;
+          option.setAttribute("aria-label", `選擇 ${label}`);
+          option.setAttribute("aria-pressed", String(filename === selected));
+
+          const image = document.createElement("img");
+          image.alt = "";
+          image.addEventListener("error", () => {
+            if (!option.isConnected) return;
+            option.disabled = true;
+            option.title = `無法載入 ${filename}`;
+            galleryError.textContent = `部分圖片無法載入，請確認 ${folder} 中的檔名與圖片陣列一致。`;
+            galleryError.hidden = false;
+          });
+          image.src = `./${folder}/${encodeURIComponent(filename)}`;
+
+          const caption = document.createElement("span");
+          caption.textContent = label;
+          option.append(image, caption);
+          option.addEventListener("click", () => {
+            onSelect(filename, index);
+            dialog.close();
+          });
+          options.append(option);
         });
-        options.append(option);
+        dialog.showModal();
       }
     </script>
   </body>
