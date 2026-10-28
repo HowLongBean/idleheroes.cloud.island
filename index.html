@@ -31,7 +31,7 @@
       }
       .panel {
         min-width: 0;
-        padding: 28px;
+        padding: 20px;
         border: 1px solid #34425a;
         border-radius: 20px;
         background: #1a2639;
@@ -48,7 +48,7 @@
         gap: 12px;
         width: 100%;
         min-height: 200px;
-        padding: 24px;
+        padding: 20px;
         overflow-wrap: anywhere;
         border: 2px dashed #6888b9;
         border-radius: 14px;
@@ -283,7 +283,7 @@
 
       // tenantImages[i] 對應 landlordImages[i]；可將 [...allTenantImages] 換成指定檔名陣列。
       const tenantImages = [
-        [...allTenantImages], // 0: alikita_trans.png
+        ["aranea.png", "aranea_trans.png"], // 0: alikita_trans.png
         [...allTenantImages], // 1: basilisk_trans.png
         [...allTenantImages], // 2: erskor_trans.png
         [...allTenantImages], // 3: finn_trans.png
@@ -505,7 +505,7 @@
         image.src = `./${folder}/${encodeURIComponent(filename)}`;
         image.hidden = false;
         button.querySelector(".placeholder").hidden = true;
-        button.querySelector("strong").textContent = `${label}`;
+        button.querySelector("strong").textContent = folder === "Landlord" ? label : "";
       }
 
       function resetTenant(slot, selectedLandlordIndex) {
@@ -559,9 +559,12 @@
           });
           image.src = `./${folder}/${encodeURIComponent(filename)}`;
 
-          const caption = document.createElement("span");
-          caption.textContent = label;
-          option.append(image, caption);
+          option.append(image);
+          if (folder === "Landlord") {
+            const caption = document.createElement("span");
+            caption.textContent = label;
+            option.append(caption);
+          }
           option.addEventListener("click", () => {
             onSelect(entry, index);
             dialog.close();
