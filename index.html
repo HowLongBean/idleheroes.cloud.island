@@ -53,6 +53,32 @@
       button { font: inherit; color: inherit; cursor: pointer; }
       button:focus-visible, .picker-panels:focus-visible, #share-url:focus-visible { outline: 3px solid #9fc2ff; outline-offset: 4px; }
       button:disabled { cursor: not-allowed; opacity: .5; }
+      .panel-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: clamp(1px, .5cqw, 8px);
+        min-height: clamp(24px, 2.25cqw, 36px);
+        margin-bottom: clamp(4px, 1.25cqw, 20px);
+      }
+      .nirvana-button {
+        flex-shrink: 0;
+        width: clamp(24px, 2.25cqw, 36px);
+        height: clamp(24px, 2.25cqw, 36px);
+        padding: 1px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        background: transparent;
+      }
+      .nirvana-button img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        filter: grayscale(1);
+      }
+      .nirvana-button[aria-pressed="true"] { border-color: #efbe6a; }
+      .nirvana-button[aria-pressed="true"] img { filter: none; }
       .image-picker {
         display: flex;
         flex-direction: column;
@@ -68,12 +94,14 @@
         background: #142035;
       }
       .image-picker:hover:not(:disabled) { background: #20314c; border-color: #9fc2ff; }
+      .image-picker.is-nirvana { background: #4a321d; border-color: #efbe6a; }
+      .image-picker.is-nirvana:hover:not(:disabled) { background: #634323; border-color: #ffda92; }
       .image-picker > * { max-width: 100%; }
       .image-picker strong:empty { display: none; }
       .section-title {
-        margin: 0 0 clamp(4px, 1.25cqw, 20px);
-        font-size: clamp(9px, 1.25cqw, 20px);
-        overflow-wrap: anywhere;
+        margin: 0;
+        font-size: clamp(7px, 1.25cqw, 20px);
+        white-space: nowrap;
       }
       .placeholder { font-size: clamp(18px, 3cqw, 48px); color: #94bbff; }
       .preview {
@@ -543,6 +571,31 @@
           heading.id = `${element.id}-title-${index}`;
           panel.setAttribute("aria-labelledby", heading.id);
           panel.querySelector(".image-picker").setAttribute("aria-labelledby", heading.id);
+          const header = document.createElement("div");
+          header.className = "panel-heading";
+          heading.before(header);
+          header.append(heading);
+          const toggle = document.createElement("button");
+          toggle.type = "button";
+          toggle.className = "nirvana-button";
+          toggle.setAttribute("aria-label", `第 ${number} 組${heading.textContent} Nirvana`);
+          toggle.setAttribute("aria-pressed", "false");
+          toggle.title = "切換 Nirvana";
+          const icon = document.createElement("img");
+          icon.alt = "";
+          const iconError = document.createElement("p");
+          iconError.className = "error nirvana-error";
+          iconError.setAttribute("role", "alert");
+          iconError.hidden = true;
+          icon.addEventListener("error", () => {
+            toggle.disabled = true;
+            iconError.textContent = "無法載入 Nirvana 圖示，請確認 Icons/Nirvana.png 存在。";
+            iconError.hidden = false;
+          });
+          icon.src = "./Icons/Nirvana.png";
+          toggle.append(icon);
+          header.append(toggle);
+          panel.append(iconError);
         });
 
         const picker = element.querySelector(".landlord-picker");
@@ -551,6 +604,7 @@
           element,
           selectedFile: null,
           selectedLandlordIndex: -1,
+          nirvana: Array(tenantConfigurations.length + 1).fill(false),
           tenantSlots: tenantConfigurations.map((configuration, index) => ({
             ...configuration,
             button: tenantPickers[index],
@@ -558,6 +612,9 @@
           })),
         };
 
+        element.querySelectorAll(".nirvana-button").forEach((toggle, index) => {
+          toggle.addEventListener("click", () => setNirvana(group, index, !group.nirvana[index]));
+        });
         picker.addEventListener("click", () => {
           dialog.dataset.groupId = element.id;
           openGallery(landlordImages, "Landlord", group.selectedFile, (_image, index) => {
@@ -572,7 +629,7 @@
               filename, name: imageLabel(filename),
             }));
             openGallery(images, "Tenant", slot.selectedFile, (image) => {
-              selectTenant(slot, image.filename);
+              selectTenant(group, index, image.filename);
             }, `第 ${number} 組：選擇房客 ${index + 1}`);
           });
         });
@@ -626,14 +683,24 @@
         setPreview(group.element.querySelector(".landlord-picker"), "Landlord", image);
         if (group.selectedLandlordIndex !== index) {
           group.selectedLandlordIndex = index;
+          group.nirvana.forEach((_enabled, pickerIndex) => setNirvana(group, pickerIndex, false));
           group.tenantSlots.forEach(slot => resetTenant(slot, index));
         }
         invalidateShareUrl();
       }
 
-      function selectTenant(slot, filename) {
+      function selectTenant(group, index, filename) {
+        const slot = group.tenantSlots[index];
+        if (slot.selectedFile !== filename) setNirvana(group, index + 1, false);
         slot.selectedFile = filename;
         setPreview(slot.button, "Tenant", { filename, name: imageLabel(filename) });
+        invalidateShareUrl();
+      }
+
+      function setNirvana(group, index, enabled) {
+        group.nirvana[index] = enabled;
+        group.element.querySelectorAll(".nirvana-button")[index].setAttribute("aria-pressed", String(enabled));
+        group.element.querySelectorAll(".image-picker")[index].classList.toggle("is-nirvana", enabled);
         invalidateShareUrl();
       }
 
@@ -646,7 +713,7 @@
       }
 
       function validateSharedState(state) {
-        if (!state || typeof state !== "object" || Array.isArray(state) || state.version !== 1) {
+        if (!state || typeof state !== "object" || Array.isArray(state) || ![1, 2].includes(state.version)) {
           throw new SharedStateError("分享設定版本不支援或格式錯誤。");
         }
         if (!Array.isArray(state.groups) || state.groups.length === 0) {
@@ -656,6 +723,11 @@
           if (!savedGroup || typeof savedGroup !== "object" || Array.isArray(savedGroup)
             || !Array.isArray(savedGroup.tenants) || savedGroup.tenants.length !== tenantConfigurations.length) {
             throw new SharedStateError(`第 ${index + 1} 組必須包含四個房客位置。`);
+          }
+          if (state.version === 2 && (!Array.isArray(savedGroup.nirvana)
+            || savedGroup.nirvana.length !== tenantConfigurations.length + 1
+            || !savedGroup.nirvana.every(value => typeof value === "boolean"))) {
+            throw new SharedStateError(`第 ${index + 1} 組必須包含五個有效的 Nirvana 狀態。`);
           }
           const landlordIndex = landlordImages.findIndex(image => image.filename === savedGroup.landlord);
           if (savedGroup.landlord !== null && landlordIndex === -1) {
@@ -670,7 +742,10 @@
             }
           });
         });
-        return state.groups;
+        return state.groups.map(savedGroup => ({
+          ...savedGroup,
+          nirvana: state.version === 1 ? Array(tenantConfigurations.length + 1).fill(false) : savedGroup.nirvana,
+        }));
       }
 
       async function encodeSharedState(state) {
@@ -727,10 +802,11 @@
         const revision = shareRevision;
         stateError.hidden = true;
         const state = {
-          version: 1,
+          version: 2,
           groups: groups.map(group => ({
             landlord: group.selectedFile,
             tenants: group.tenantSlots.map(slot => slot.selectedFile),
+            nirvana: [...group.nirvana],
           })),
         };
         try {
@@ -787,9 +863,10 @@
             if (savedGroup.landlord !== null) {
               selectLandlord(group, landlordImages.findIndex(image => image.filename === savedGroup.landlord));
               savedGroup.tenants.forEach((filename, index) => {
-                if (filename !== null) selectTenant(group.tenantSlots[index], filename);
+                if (filename !== null) selectTenant(group, index, filename);
               });
             }
+            savedGroup.nirvana.forEach((enabled, index) => setNirvana(group, index, enabled));
           }
         } catch (error) {
           if (!(error instanceof SharedStateError)) throw error;
