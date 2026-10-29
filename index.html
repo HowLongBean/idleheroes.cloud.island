@@ -58,18 +58,28 @@
         align-items: center;
         justify-content: space-between;
         gap: clamp(1px, .5cqw, 8px);
-        min-height: clamp(24px, 2.25cqw, 36px);
+        min-height: clamp(24px, 4cqw, 48px);
         margin-bottom: clamp(4px, 1.25cqw, 20px);
       }
-      .nirvana-button {
+      .panel-actions { display: flex; gap: 2px; margin-left: auto; }
+      .nirvana-button, .icon-picker {
         flex-shrink: 0;
-        width: clamp(24px, 2.25cqw, 36px);
-        height: clamp(24px, 2.25cqw, 36px);
+        width: clamp(24px, 4cqw, 48px);
+        height: clamp(24px, 4cqw, 48px);
         padding: 1px;
         border: 1px solid transparent;
         border-radius: 4px;
         background: transparent;
       }
+      .icon-picker {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-color: #526583;
+        font-size: clamp(18px, 1.5cqw, 24px);
+      }
+      .icon-picker:hover { background: #34425a; }
+      .icon-picker img { width: 100%; height: 100%; object-fit: contain; }
       .nirvana-button img {
         display: block;
         width: 100%;
@@ -155,6 +165,12 @@
       .image-option[aria-pressed="true"] { border-color: #9fc2ff; background: #2c4265; }
       .image-option img { width: 94px; height: 99px; object-fit: contain; }
       .image-option span { max-width: 100%; overflow-wrap: anywhere; font-size: .85rem; }
+      .image-option-none { min-height: 128px; justify-content: center; }
+
+      @container (max-width: 600px) {
+        .panel { padding: clamp(1px, .35cqw, 2px); }
+        .panel-heading { flex-direction: column; align-items: stretch; gap: 4px; }
+      }
 
       @media (max-width: 420px) {
         body { padding: 28px 16px; }
@@ -525,6 +541,16 @@
         { images: tenantImages3, arrayName: "tenantImages3" },
         { images: tenantImages4, arrayName: "tenantImages4" },
       ];
+      const selectableIcons = [
+        { filename: "Bloom.png", name: "Bloom" },
+        { filename: "Butterfly.png", name: "Butterfly" },
+        { filename: "Netherfish.png", name: "Netherfish" },
+        { filename: "Nova.png", name: "新星" },
+        { filename: "Plume.png", name: "Plume" },
+        { filename: "Pupil.png", name: "Pupil" },
+        { filename: "Specter.png", name: "Specter" },
+        { filename: "Spiral.png", name: "Spiral" },
+      ];
       const shareBaseUrl = "https://howlongbean.github.io/idleheroes.cloud.island/";
       // z1 使用 DEFLATE + Base64URL；沒有前綴的舊 JSON 參數仍可還原。
       const compressedStatePrefix = "z1.";
@@ -594,8 +620,38 @@
           });
           icon.src = "./Icons/Nirvana.png";
           toggle.append(icon);
-          header.append(toggle);
+          const actions = document.createElement("div");
+          actions.className = "panel-actions";
+          actions.append(toggle);
+          header.append(actions);
           panel.append(iconError);
+
+          const iconPicker = document.createElement("button");
+          iconPicker.type = "button";
+          iconPicker.className = "icon-picker";
+          iconPicker.dataset.label = `第 ${number} 組${heading.textContent}圖示`;
+          iconPicker.setAttribute("aria-label", `${iconPicker.dataset.label}：無`);
+          iconPicker.setAttribute("aria-haspopup", "dialog");
+          iconPicker.setAttribute("aria-controls", "image-dialog");
+          iconPicker.title = "選擇圖示（目前：無）";
+          const plus = document.createElement("span");
+          plus.textContent = "＋";
+          plus.setAttribute("aria-hidden", "true");
+          const selectedIcon = document.createElement("img");
+          selectedIcon.alt = "";
+          selectedIcon.hidden = true;
+          const selectionError = document.createElement("p");
+          selectionError.className = "error icon-selection-error";
+          selectionError.setAttribute("role", "alert");
+          selectionError.hidden = true;
+          selectedIcon.addEventListener("error", () => {
+            if (!selectedIcon.hasAttribute("src")) return;
+            selectionError.textContent = `無法載入 Icons/${selectedIcon.dataset.filename}，請確認圖示存在。`;
+            selectionError.hidden = false;
+          });
+          iconPicker.append(plus, selectedIcon);
+          actions.append(iconPicker);
+          panel.append(selectionError);
         });
 
         const picker = element.querySelector(".landlord-picker");
@@ -605,6 +661,7 @@
           selectedFile: null,
           selectedLandlordIndex: -1,
           nirvana: Array(tenantConfigurations.length + 1).fill(false),
+          icons: Array(tenantConfigurations.length + 1).fill(null),
           tenantSlots: tenantConfigurations.map((configuration, index) => ({
             ...configuration,
             button: tenantPickers[index],
@@ -614,6 +671,21 @@
 
         element.querySelectorAll(".nirvana-button").forEach((toggle, index) => {
           toggle.addEventListener("click", () => setNirvana(group, index, !group.nirvana[index]));
+        });
+        element.querySelectorAll(".icon-picker").forEach((iconPicker, index) => {
+          iconPicker.addEventListener("click", () => {
+            const used = new Set(groups.flatMap(current => current.icons));
+            const images = [
+              { filename: null, name: "無" },
+              ...selectableIcons.filter(icon => !used.has(icon.filename)),
+            ];
+            const currentName = group.icons[index] === null ? "無"
+              : selectableIcons.find(icon => icon.filename === group.icons[index]).name;
+            dialog.dataset.groupId = element.id;
+            openGallery(images, "Icons", group.icons[index], (image) => {
+              return selectIcon(group, index, image.filename);
+            }, `${iconPicker.dataset.label}：目前 ${currentName}`);
+          });
         });
         picker.addEventListener("click", () => {
           dialog.dataset.groupId = element.id;
@@ -684,6 +756,7 @@
         if (group.selectedLandlordIndex !== index) {
           group.selectedLandlordIndex = index;
           group.nirvana.forEach((_enabled, pickerIndex) => setNirvana(group, pickerIndex, false));
+          group.icons.forEach((_filename, pickerIndex) => selectIcon(group, pickerIndex, null));
           group.tenantSlots.forEach(slot => resetTenant(slot, index));
         }
         invalidateShareUrl();
@@ -691,7 +764,10 @@
 
       function selectTenant(group, index, filename) {
         const slot = group.tenantSlots[index];
-        if (slot.selectedFile !== filename) setNirvana(group, index + 1, false);
+        if (slot.selectedFile !== filename) {
+          setNirvana(group, index + 1, false);
+          selectIcon(group, index + 1, null);
+        }
         slot.selectedFile = filename;
         setPreview(slot.button, "Tenant", { filename, name: imageLabel(filename) });
         invalidateShareUrl();
@@ -704,6 +780,40 @@
         invalidateShareUrl();
       }
 
+      function selectIcon(group, index, filename) {
+        const button = group.element.querySelectorAll(".icon-picker")[index];
+        const error = button.closest(".panel").querySelector(".icon-selection-error");
+        const selectedIcon = selectableIcons.find(icon => icon.filename === filename);
+        if (filename !== null && (!selectedIcon
+          || groups.some(current => current.icons.some((icon, slotIndex) =>
+            icon === filename && (current !== group || slotIndex !== index))))) {
+          error.textContent = "此圖示不存在或已被其他位置選取，請重新開啟清單選擇。";
+          error.hidden = false;
+          if (dialog.open) {
+            galleryError.textContent = error.textContent;
+            galleryError.hidden = false;
+          }
+          return false;
+        }
+        group.icons[index] = filename;
+        const image = button.querySelector("img");
+        image.hidden = filename === null;
+        button.querySelector("span").hidden = filename !== null;
+        error.hidden = true;
+        const label = filename === null ? "無" : selectedIcon.name;
+        button.setAttribute("aria-label", `${button.dataset.label}：${label}`);
+        button.title = `選擇圖示（目前：${label}）`;
+        if (filename === null) {
+          image.removeAttribute("src");
+          delete image.dataset.filename;
+        } else {
+          image.dataset.filename = filename;
+          image.src = `./Icons/${encodeURIComponent(filename)}`;
+        }
+        invalidateShareUrl();
+        return true;
+      }
+
       function invalidateShareUrl() {
         shareRevision++;
         shareResult.hidden = true;
@@ -713,21 +823,37 @@
       }
 
       function validateSharedState(state) {
-        if (!state || typeof state !== "object" || Array.isArray(state) || ![1, 2].includes(state.version)) {
+        if (!state || typeof state !== "object" || Array.isArray(state) || ![1, 2, 3].includes(state.version)) {
           throw new SharedStateError("分享設定版本不支援或格式錯誤。");
         }
         if (!Array.isArray(state.groups) || state.groups.length === 0) {
           throw new SharedStateError("分享設定至少需要一組住宅。");
         }
+        const usedIcons = new Set();
         state.groups.forEach((savedGroup, index) => {
           if (!savedGroup || typeof savedGroup !== "object" || Array.isArray(savedGroup)
             || !Array.isArray(savedGroup.tenants) || savedGroup.tenants.length !== tenantConfigurations.length) {
             throw new SharedStateError(`第 ${index + 1} 組必須包含四個房客位置。`);
           }
-          if (state.version === 2 && (!Array.isArray(savedGroup.nirvana)
+          if (state.version >= 2 && (!Array.isArray(savedGroup.nirvana)
             || savedGroup.nirvana.length !== tenantConfigurations.length + 1
             || !savedGroup.nirvana.every(value => typeof value === "boolean"))) {
             throw new SharedStateError(`第 ${index + 1} 組必須包含五個有效的 Nirvana 狀態。`);
+          }
+          if (state.version === 3) {
+            if (!Array.isArray(savedGroup.icons) || savedGroup.icons.length !== tenantConfigurations.length + 1) {
+              throw new SharedStateError(`第 ${index + 1} 組必須包含五個圖示位置。`);
+            }
+            savedGroup.icons.forEach(filename => {
+              if (filename === null) return;
+              if (!selectableIcons.some(icon => icon.filename === filename)) {
+                throw new SharedStateError(`第 ${index + 1} 組包含不支援的圖示。`);
+              }
+              if (usedIcons.has(filename)) {
+                throw new SharedStateError("分享設定包含重複圖示，每個圖示只能在全頁使用一次。");
+              }
+              usedIcons.add(filename);
+            });
           }
           const landlordIndex = landlordImages.findIndex(image => image.filename === savedGroup.landlord);
           if (savedGroup.landlord !== null && landlordIndex === -1) {
@@ -745,6 +871,7 @@
         return state.groups.map(savedGroup => ({
           ...savedGroup,
           nirvana: state.version === 1 ? Array(tenantConfigurations.length + 1).fill(false) : savedGroup.nirvana,
+          icons: state.version < 3 ? Array(tenantConfigurations.length + 1).fill(null) : savedGroup.icons,
         }));
       }
 
@@ -802,11 +929,12 @@
         const revision = shareRevision;
         stateError.hidden = true;
         const state = {
-          version: 2,
+          version: 3,
           groups: groups.map(group => ({
             landlord: group.selectedFile,
             tenants: group.tenantSlots.map(slot => slot.selectedFile),
             nirvana: [...group.nirvana],
+            icons: [...group.icons],
           })),
         };
         try {
@@ -867,6 +995,7 @@
               });
             }
             savedGroup.nirvana.forEach((enabled, index) => setNirvana(group, index, enabled));
+            savedGroup.icons.forEach((filename, index) => selectIcon(group, index, filename));
           }
         } catch (error) {
           if (!(error instanceof SharedStateError)) throw error;
@@ -931,29 +1060,32 @@
           const option = document.createElement("button");
           option.type = "button";
           option.className = "image-option";
-          option.dataset.filename = filename;
+          option.dataset.filename = filename ?? "";
           option.setAttribute("aria-label", `選擇 ${label}`);
           option.setAttribute("aria-pressed", String(filename === selected));
 
-          const image = document.createElement("img");
-          image.alt = "";
-          image.addEventListener("error", () => {
-            if (!option.isConnected) return;
-            option.disabled = true;
-            option.title = `無法載入 ${filename}`;
-            galleryError.textContent = `部分圖片無法載入，請確認 ${folder} 中的檔名與圖片陣列一致。`;
-            galleryError.hidden = false;
-          });
-          image.src = `./${folder}/${encodeURIComponent(filename)}`;
-
-          option.append(image);
-          if (folder === "Landlord") {
+          if (filename !== null) {
+            const image = document.createElement("img");
+            image.alt = "";
+            image.addEventListener("error", () => {
+              if (!option.isConnected) return;
+              option.disabled = true;
+              option.title = `無法載入 ${filename}`;
+              galleryError.textContent = `部分圖片無法載入，請確認 ${folder} 中的檔名與圖片陣列一致。`;
+              galleryError.hidden = false;
+            });
+            image.src = `./${folder}/${encodeURIComponent(filename)}`;
+            option.append(image);
+          } else {
+            option.classList.add("image-option-none");
+          }
+          if (folder !== "Tenant") {
             const caption = document.createElement("span");
             caption.textContent = label;
             option.append(caption);
           }
           option.addEventListener("click", () => {
-            onSelect(entry, index);
+            if (onSelect(entry, index) === false) return;
             dialog.close();
           });
           options.append(option);
