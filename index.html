@@ -21,7 +21,8 @@
       .eyebrow { color: #94bbff; letter-spacing: .12em; font-size: .8rem; }
       .muted { color: #aab8cd; }
       .group-controls { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
-      #share-settings { margin-left: auto; }
+      .share-controls { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; margin-left: auto; max-width: 100%; }
+      #mark-duplicates[aria-pressed="true"] { background: #702633; border-color: #ff3344; }
       #share-result { margin-top: 20px; }
       #share-result label { display: block; margin-bottom: 8px; }
       #share-url {
@@ -90,6 +91,7 @@
       .nirvana-button[aria-pressed="true"] { border-color: #efbe6a; }
       .nirvana-button[aria-pressed="true"] img { filter: none; }
       .image-picker {
+        position: relative;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -106,6 +108,15 @@
       .image-picker:hover:not(:disabled) { background: #20314c; border-color: #9fc2ff; }
       .image-picker.is-nirvana { background: #4a321d; border-color: #efbe6a; }
       .image-picker.is-nirvana:hover:not(:disabled) { background: #634323; border-color: #ffda92; }
+      .image-picker.is-duplicate::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border: 4px solid #ff3344;
+        border-radius: inherit;
+        box-shadow: 0 0 6px #ff3344;
+        pointer-events: none;
+      }
       .image-picker > * { max-width: 100%; }
       .image-picker strong:empty { display: none; }
       .section-title {
@@ -184,7 +195,10 @@
       <div class="group-controls">
         <button id="add-group" class="group-button" type="button" aria-controls="groups">住宅新建</button>
         <button id="delete-group" class="group-button" type="button" aria-controls="groups" hidden>住宅拆遷</button>
-        <button id="share-settings" class="group-button" type="button" aria-controls="share-result">產生分享網址</button>
+        <div class="share-controls">
+          <button id="mark-duplicates" class="group-button" type="button" aria-controls="groups" aria-pressed="false">標記重複角色</button>
+          <button id="share-settings" class="group-button" type="button" aria-controls="share-result">產生分享網址</button>
+        </div>
       </div>
       <div id="share-result" hidden>
         <label for="share-url">分享網址</label>
@@ -560,6 +574,7 @@
       const addGroupButton = document.getElementById("add-group");
       const deleteGroupButton = document.getElementById("delete-group");
       const shareSettingsButton = document.getElementById("share-settings");
+      const markDuplicatesButton = document.getElementById("mark-duplicates");
       const shareResult = document.getElementById("share-result");
       const shareUrlInput = document.getElementById("share-url");
       const shareStatus = document.getElementById("share-status");
@@ -569,12 +584,18 @@
       const galleryError = document.getElementById("gallery-error");
       let nextGroupId = 1;
       let shareRevision = 0;
+      let markDuplicates = false;
 
       class SharedStateError extends Error {}
 
       addGroupButton.addEventListener("click", addGroup);
       deleteGroupButton.addEventListener("click", deleteGroup);
       shareSettingsButton.addEventListener("click", generateShareUrl);
+      markDuplicatesButton.addEventListener("click", () => {
+        markDuplicates = !markDuplicates;
+        markDuplicatesButton.setAttribute("aria-pressed", String(markDuplicates));
+        updateDuplicateMarkers();
+      });
       shareUrlInput.addEventListener("click", () => shareUrlInput.select());
       document.getElementById("close-dialog").addEventListener("click", () => dialog.close());
       dialog.addEventListener("click", (event) => {
@@ -719,6 +740,7 @@
         groupsContainer.append(element);
         groups.push(group);
         deleteGroupButton.hidden = groups.length <= 1;
+        updateDuplicateMarkers();
         invalidateShareUrl();
         return group;
       }
@@ -741,6 +763,7 @@
         lastGroup.remove();
         groups.pop();
         deleteGroupButton.hidden = groups.length <= 1;
+        updateDuplicateMarkers();
         invalidateShareUrl();
         if (closesGallery || lastGroup.contains(focusedElement)
           || (deleteGroupButton.hidden && focusedElement === deleteGroupButton)) {
@@ -759,6 +782,7 @@
           group.icons.forEach((_filename, pickerIndex) => selectIcon(group, pickerIndex, null));
           group.tenantSlots.forEach(slot => resetTenant(slot, index));
         }
+        updateDuplicateMarkers();
         invalidateShareUrl();
       }
 
@@ -770,7 +794,24 @@
         }
         slot.selectedFile = filename;
         setPreview(slot.button, "Tenant", { filename, name: imageLabel(filename) });
+        updateDuplicateMarkers();
         invalidateShareUrl();
+      }
+
+      function updateDuplicateMarkers() {
+        const selections = groups.flatMap(group => [
+          { filename: group.selectedFile, button: group.element.querySelector(".landlord-picker") },
+          ...group.tenantSlots.map(slot => ({ filename: slot.selectedFile, button: slot.button })),
+        ]);
+        const counts = new Map();
+        if (markDuplicates) {
+          for (const { filename } of selections) {
+            if (filename !== null) counts.set(filename, (counts.get(filename) ?? 0) + 1);
+          }
+        }
+        for (const { filename, button } of selections) {
+          button.classList.toggle("is-duplicate", markDuplicates && filename !== null && counts.get(filename) > 1);
+        }
       }
 
       function setNirvana(group, index, enabled) {
